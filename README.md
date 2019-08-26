@@ -1,4 +1,4 @@
 # linpop
 Neusoft
 
-zhongtiansheng added
+钟天声已加入

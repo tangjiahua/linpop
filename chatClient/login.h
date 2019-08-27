@@ -14,7 +14,6 @@ struct loginInfo
 {
   char id[20]={0};
   char pwd[20]={0};
-  int flag;//1
 };
 
 class Login : public QDialog

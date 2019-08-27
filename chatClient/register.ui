@@ -82,7 +82,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>new account:</string>
+    <string>new account has been created:</string>
    </property>
   </widget>
  </widget>

@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include "interface.h"
 
 namespace Ui {
 class Register;
@@ -13,7 +14,6 @@ struct registerInfo
 {
   char name[20]={0};
   char pwd[20]={0};
-  int flag;//2
 };
 
 class Register : public QDialog

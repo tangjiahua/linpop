@@ -18,14 +18,13 @@ Login::~Login()
 
 void Login::loginTo()
 {
-    if(sockfd != -1)
-        cs.closeSockfd(sockfd);
-    sockfd = cs.connectTo("127.0.0.1",8888);
-    if(-1 == sockfd)
+    sockfd = cs.connectTo("10.10.10.10",8888);//change server ip here
+    if(-1 == sockfd){
+        qDebug() << "sockfd = -1" << endl;
         return;
+    }
 
     loginInfo lf;
-    lf.flag = 1;
     strcpy(lf.id ,ui->lineEdit_account->text().toStdString().c_str());
     strcpy(lf.pwd,ui->lineEdit_pwd->text().toStdString().c_str());
     if(!strcmp(lf.id,"") || !strcmp(lf.pwd,""))
@@ -36,20 +35,24 @@ void Login::loginTo()
     ssize_t size = send(sockfd,(void*)&lf,sizeof(lf),0);
     if(-1 == size)
     {
+        qDebug() << "send message error" << endl;
         return;
     }
-    int flag = 0;
+
+    int flag = 0;//server send client 1 means login successfully
     size = recv(sockfd,&flag,sizeof(int),0);
     if(1 == flag)
     {
+        //start interface
         qDebug() << "login successful" << endl;
         main_face = new interface(sockfd,atoi(lf.id));
         main_face->show();
         this->close();
-        //delete this;
+        delete this;
     }
     else
     {
+        qDebug() << "server send me not 1!" << endl;
         return;
     }
 }
@@ -59,7 +62,7 @@ void Login::registerTo()
     if(-1 == sockfd)
     {
         connectServer cs;
-        sockfd = cs.connectTo("127.0.0.1",8888);
+        sockfd = cs.connectTo("10.10.10.10",8888);
         if(-1 == sockfd)
         {
             qDebug() << "register don't connect server" << endl;

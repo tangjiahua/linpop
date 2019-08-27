@@ -3,10 +3,10 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    Login window;
-    window.show();
+    QApplication linpop(argc, argv);
+    Login login_window;
+    login_window.show();
 
 
-    return a.exec();
+    return linpop.exec();
 }

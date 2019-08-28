@@ -1,6 +1,6 @@
 #include "login.h"
 #include "ui_login.h"
-
+#include <string>
 Login::Login(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Login)
@@ -18,7 +18,7 @@ Login::~Login()
 
 void Login::loginTo()
 {
-    sockfd = cs.connectTo("10.10.10.10",8888);//change server ip here
+    sockfd = cs.connectTo("10.195.94.214",8887);//change server ip here
     if(-1 == sockfd){
         qDebug() << "sockfd = -1" << endl;
         return;
@@ -27,12 +27,21 @@ void Login::loginTo()
     loginInfo lf;
     strcpy(lf.id ,ui->lineEdit_account->text().toStdString().c_str());
     strcpy(lf.pwd,ui->lineEdit_pwd->text().toStdString().c_str());
+    //
+    char loginInfoSendToServer[40] = {0};
+    strcat(loginInfoSendToServer,"1|");
+    strcat(loginInfoSendToServer,lf.id);
+    strcat(loginInfoSendToServer,"|");
+    strcat(loginInfoSendToServer,lf.pwd);
+    qDebug() << loginInfoSendToServer << endl;
+
     if(!strcmp(lf.id,"") || !strcmp(lf.pwd,""))
     {
         qDebug() << "pwd or id is empty!" << endl;
         return;
     }
-    ssize_t size = send(sockfd,(void*)&lf,sizeof(lf),0);
+
+    ssize_t size = send(sockfd,(void*)&loginInfoSendToServer,sizeof(loginInfoSendToServer),0);
     if(-1 == size)
     {
         qDebug() << "send message error" << endl;
@@ -50,10 +59,13 @@ void Login::loginTo()
         this->close();
         delete this;
     }
-    else
+    else if(0 == flag)
     {
-        qDebug() << "server send me not 1!" << endl;
+        qDebug() << "login failed" << endl;
         return;
+    }
+    else{
+        qDebug() << "other error" <<endl;
     }
 }
 
@@ -62,7 +74,7 @@ void Login::registerTo()
     if(-1 == sockfd)
     {
         connectServer cs;
-        sockfd = cs.connectTo("10.10.10.10",8888);
+        sockfd = cs.connectTo("10.195.94.214",8887);
         if(-1 == sockfd)
         {
             qDebug() << "register don't connect server" << endl;
@@ -72,3 +84,5 @@ void Login::registerTo()
     regist = new Register(sockfd);
     regist->show();
 }
+
+

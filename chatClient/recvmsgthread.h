@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <QDebug>
+#include <arpa/inet.h>
+#include <string.h>
+#include <stdio.h>
 
 class recvMsgThread : public QObject
 {

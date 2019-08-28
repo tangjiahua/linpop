@@ -29,3 +29,9 @@ HEADERS  += interface.h \
 FORMS    += interface.ui \
     login.ui \
     register.ui
+
+RESOURCES += \
+    resources.qrc
+
+DISTFILES += \
+    ../../../图片/timg.jpeg

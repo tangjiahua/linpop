@@ -19,7 +19,7 @@ public:
     static void closeSockfd(int sockfd);
 
 private:
-    struct sockaddr_in addr;
+    struct sockaddr_in addr;//use to let network address transfer to Ubuntu 18.04 standarlized address
 };
 
 #endif // CONNECTSERVER_H

@@ -3,7 +3,7 @@
 #include <string>
 
 
-char serverIp[20] = "10.194.46.116";
+char serverIp[20] = "10.194.41.244";
 int serverPort = 8888;
 char localIp[20];
 
@@ -48,6 +48,12 @@ void Login::loginTo()
         return;
     }
 
+
+    /* Read N bytes into BUF from socket FD.
+       Returns the number read or -1 for errors.
+
+       This function is a cancellation point and therefore not marked with
+       __THROW.  */
     ssize_t size = send(sockfd,(void*)&loginInfoSendToServer,sizeof(loginInfoSendToServer),0);
     if(-1 == size)
     {
@@ -55,18 +61,20 @@ void Login::loginTo()
         return;
     }
 
-    int flag = 0;//server send client 1 means login successfully
+    char flag;//server send client 1 means login successfully
     size = recv(sockfd,&flag,sizeof(int),0);
-    if(1 == flag)
+    if('1' == flag)
     {
         //start interface
         qDebug() << "login successful" << endl;
-        main_face = new interface(sockfd,atoi(lf.id));
-        main_face->show();
+//        main_face = new interface(sockfd,atoi(lf.id));
+//        main_face->show();
+          main_window = new MainWindow(sockfd, atoi(lf.id));
+          main_window->show();
         this->close();
-        delete this;
+
     }
-    else if(0 == flag)
+    else if('0' == flag)
     {
         qDebug() << "login failed" << endl;
         return;

@@ -17,18 +17,21 @@ SOURCES += main.cpp\
     login.cpp \
     connectserver.cpp \
     register.cpp \
-    recvmsgthread.cpp
+    recvmsgthread.cpp \
+    mainwindow.cpp
 
 HEADERS  += interface.h \
     login.h \
     connectserver.h \
     register.h \
     msg.h \
-    recvmsgthread.h
+    recvmsgthread.h \
+    mainwindow.h
 
 FORMS    += interface.ui \
     login.ui \
-    register.ui
+    register.ui \
+    mainwindow.ui
 
 RESOURCES += \
     resources.qrc

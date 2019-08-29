@@ -5,6 +5,7 @@
 #include "connectserver.h"
 #include "interface.h"
 #include "register.h"
+#include "mainwindow.h"
 
 namespace Ui {
 class Login;
@@ -27,6 +28,7 @@ public:
 private:
     Ui::Login *ui;
     interface* main_face;
+    MainWindow* main_window;
     Register* regist;
     int sockfd;
     connectServer cs;

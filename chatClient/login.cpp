@@ -1,6 +1,12 @@
 #include "login.h"
 #include "ui_login.h"
 #include <string>
+
+
+char serverIp[20] = "10.194.46.116";
+int serverPort = 8888;
+char localIp[20];
+
 Login::Login(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Login)
@@ -18,7 +24,7 @@ Login::~Login()
 
 void Login::loginTo()
 {
-    sockfd = cs.connectTo("10.195.94.214",8887);//change server ip here
+    sockfd = cs.connectTo(serverIp,serverPort);//change server ip here
     if(-1 == sockfd){
         qDebug() << "sockfd = -1" << endl;
         return;
@@ -29,6 +35,7 @@ void Login::loginTo()
     strcpy(lf.pwd,ui->lineEdit_pwd->text().toStdString().c_str());
     //
     char loginInfoSendToServer[40] = {0};
+
     strcat(loginInfoSendToServer,"1|");
     strcat(loginInfoSendToServer,lf.id);
     strcat(loginInfoSendToServer,"|");
@@ -74,7 +81,7 @@ void Login::registerTo()
     if(-1 == sockfd)
     {
         connectServer cs;
-        sockfd = cs.connectTo("10.195.94.214",8887);
+        sockfd = cs.connectTo(serverIp,serverPort);
         if(-1 == sockfd)
         {
             qDebug() << "register don't connect server" << endl;

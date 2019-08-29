@@ -25,11 +25,11 @@ int connectServer::connectTo(string ip_addr, short port)
         return -1;
     }
     //bind sockfd
-    if(bind(sockfd,(struct sockaddr*)&addr,sizeof(addr)) != 0)
-    {
-        qDebug() << "bind error\n" << endl;
-        return -1;
-    }
+//    if(bind(sockfd,(struct sockaddr*)&addr,sizeof(addr)) != 0)
+//    {
+//        qDebug() << "bind error\n" << endl;
+//        return -1;
+//    }
     //connect to server
     int res = connect(sockfd,(struct sockaddr*)&addr,sizeof(addr));
     if(-1 == res)

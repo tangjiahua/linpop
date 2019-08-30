@@ -50,11 +50,7 @@ void Login::loginTo()
     }
 
 
-    /* Read N bytes into BUF from socket FD.
-       Returns the number read or -1 for errors.
 
-       This function is a cancellation point and therefore not marked with
-       __THROW.  */
     ssize_t size = send(sockfd,(void*)&loginInfoSendToServer,sizeof(loginInfoSendToServer),0);
     if(-1 == size)
     {
@@ -68,8 +64,8 @@ void Login::loginTo()
     {
         //start interface
         qDebug() << "login successful" << endl;
-          main_window = new MainWindow(sockfd, atoi(lf.id));
-          main_window->show();
+        main_window = new MainWindow(sockfd, atoi(lf.id));
+        main_window->show();
         this->close();
 
     }

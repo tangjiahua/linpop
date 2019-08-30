@@ -22,7 +22,6 @@ const QStringList singers = {
 };
 
 
-
 MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
     sockfd(sockfd),
     my_id(my_id),
@@ -30,8 +29,9 @@ MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
-    //connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showTalkBox()));
 
+
+    setGeometry(1500,0,266,675);
     ui->setupUi(this);
     QStandardItemModel *pModel = new QStandardItemModel();
         for (int i=0; i<icons.size(); ++i) {
@@ -47,12 +47,14 @@ MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
         MuItemDelegate *pItemDelegate = new MuItemDelegate(this);
         ui->listView->setItemDelegate(pItemDelegate);
         ui->listView->setModel(pModel);
+        connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showMyTalkBox()));
 }
 
-//void showTalkBox(){
-//    myTalkBox = new TalkBox();
-//    myTalkBox->show();
-//}
+void MainWindow::showMyTalkBox(){
+    myTalkBox = new TalkBox();
+    myTalkBox->show();
+
+}
 
 MainWindow::~MainWindow()
 {

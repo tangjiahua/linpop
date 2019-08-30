@@ -8,7 +8,7 @@
 #include <QHBoxLayout>
 #include <QStandardItemModel>
 #include <QObject>
-
+#include "talkbox.h"
 namespace Ui {
 class MainWindow;
 }
@@ -20,7 +20,9 @@ class MainWindow: public QMainWindow
     Q_OBJECT
 
 public:
+    TalkBox* myTalkBox;
     explicit MainWindow(int sockfd, int my_id, QWidget *parent = 0);
+
     ~MainWindow();
 
 private:
@@ -30,7 +32,7 @@ private:
     int my_id;
 
 private slots:
-
+    void showMyTalkBox();
 };
 
 

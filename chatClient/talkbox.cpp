@@ -7,6 +7,7 @@ TalkBox::TalkBox(QWidget *parent) :
 {
     setGeometry(600,100,266,675);
     ui->setupUi(this);
+
 }
 
 TalkBox::~TalkBox()

@@ -76,19 +76,19 @@
        <x>0</x>
        <y>0</y>
        <width>241</width>
-       <height>422</height>
+       <height>453</height>
       </rect>
      </property>
      <attribute name="label">
       <string>Page 1</string>
      </attribute>
-     <widget class="QListView" name="listView">
+     <widget class="QListWidget" name="friendListWidget">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>10</y>
         <width>241</width>
-        <height>411</height>
+        <height>431</height>
        </rect>
       </property>
      </widget>
@@ -99,35 +99,11 @@
        <x>0</x>
        <y>0</y>
        <width>241</width>
-       <height>422</height>
+       <height>453</height>
       </rect>
      </property>
      <attribute name="label">
       <string>页</string>
-     </attribute>
-     <widget class="QWidget" name="verticalLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>241</width>
-        <height>411</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="pageLayout2"/>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="page3">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>241</width>
-       <height>422</height>
-      </rect>
-     </property>
-     <attribute name="label">
-      <string>Page 2</string>
      </attribute>
     </widget>
    </widget>

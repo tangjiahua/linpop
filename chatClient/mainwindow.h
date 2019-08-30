@@ -8,7 +8,9 @@
 #include <QHBoxLayout>
 #include <QStandardItemModel>
 #include <QObject>
+#include <QTreeView>
 #include "talkbox.h"
+#include "QListWidget"
 namespace Ui {
 class MainWindow;
 }
@@ -33,6 +35,7 @@ private:
 
 private slots:
     void showMyTalkBox();
+    void singleclicked(QListWidgetItem* item);
 };
 
 

@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     connectserver.cpp \
     register.cpp \
     recvmsgthread.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    mulitemdelegate.cpp
 
 HEADERS  += interface.h \
     login.h \
@@ -26,7 +27,9 @@ HEADERS  += interface.h \
     register.h \
     msg.h \
     recvmsgthread.h \
-    mainwindow.h
+    mainwindow.h \
+    mulitemdelegate.h \
+    mulistitemdata.h
 
 FORMS    += interface.ui \
     login.ui \
@@ -34,7 +37,8 @@ FORMS    += interface.ui \
     mainwindow.ui
 
 RESOURCES += \
-    resources.qrc
+    resources.qrc \
+    qq.qrc
 
 DISTFILES += \
     ../../../图片/timg.jpeg

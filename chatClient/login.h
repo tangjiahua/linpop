@@ -3,9 +3,9 @@
 
 #include <QDialog>
 #include "connectserver.h"
-#include "interface.h"
 #include "register.h"
 #include "mainwindow.h"
+
 
 namespace Ui {
 class Login;

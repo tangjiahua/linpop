@@ -1,9 +1,9 @@
 #include "login.h"
 #include "ui_login.h"
 #include <string>
+#include "mainwindow.h"
 
-
-char serverIp[20] = "10.194.41.244";
+char serverIp[20] = "10.194.33.149";
 int serverPort = 8888;
 char localIp[20];
 
@@ -67,10 +67,8 @@ void Login::loginTo()
     {
         //start interface
         qDebug() << "login successful" << endl;
-//        main_face = new interface(sockfd,atoi(lf.id));
-//        main_face->show();
-          main_window = new MainWindow(sockfd, atoi(lf.id));
-          main_window->show();
+        main_window = new MainWindow(sockfd, atoi(lf.id));
+        main_window->show();
         this->close();
 
     }

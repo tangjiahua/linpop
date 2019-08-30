@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 
 
-char serverIp[20] = "10.194.41.208";
+char serverIp[20] = "10.195.15.196";
 int serverPort = 8888;
 char localIp[20];
 
@@ -59,7 +59,7 @@ void Login::loginTo()
     }
 
     char flag;//server send client 1 means login successfully
-    size = recv(sockfd,&flag,sizeof(int),0);
+    size = recv(sockfd,&flag,sizeof(flag),0);
     if('1' == flag)
     {
         //start interface

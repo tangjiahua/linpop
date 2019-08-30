@@ -48,6 +48,7 @@ MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
         ui->listView->setItemDelegate(pItemDelegate);
         ui->listView->setModel(pModel);
         connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showMyTalkBox()));
+
 }
 
 void MainWindow::showMyTalkBox(){

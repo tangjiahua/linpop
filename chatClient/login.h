@@ -27,7 +27,7 @@ public:
 
 private:
     Ui::Login *ui;
-    interface* main_face;
+
     MainWindow* main_window;
     Register* regist;
     int sockfd;

@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "interface.h"
+#include "connectserver.h"
 
 namespace Ui {
 class Register;
@@ -27,6 +27,7 @@ public:
 private:
     Ui::Register *ui;
     int sockfd;
+    connectServer cs;
 
 private slots:
     void commitTo();

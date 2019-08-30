@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     register.cpp \
     recvmsgthread.cpp \
     mainwindow.cpp \
-    mulitemdelegate.cpp
+    mulitemdelegate.cpp \
+    talkbox.cpp
 
 HEADERS  += interface.h \
     login.h \
@@ -29,12 +30,14 @@ HEADERS  += interface.h \
     recvmsgthread.h \
     mainwindow.h \
     mulitemdelegate.h \
-    mulistitemdata.h
+    mulistitemdata.h \
+    talkbox.h
 
 FORMS    += interface.ui \
     login.ui \
     register.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    talkbox.ui
 
 RESOURCES += \
     resources.qrc \

@@ -29,13 +29,16 @@ MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
+    //connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showTalkBox()));
+
     ui->setupUi(this);
     QStandardItemModel *pModel = new QStandardItemModel();
         for (int i=0; i<icons.size(); ++i) {
             QStandardItem *pItem = new QStandardItem;
             MyMuItemData itemData;
             itemData.name = singers.at(i);
-            itemData.status = QString::number(i * i) + "首";
+            itemData.status = "Online";
             itemData.iconPath = icons.at(i);
             pItem->setData(QVariant::fromValue(itemData), Qt::UserRole+1);
             pModel->appendRow(pItem);
@@ -44,11 +47,12 @@ MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
         MuItemDelegate *pItemDelegate = new MuItemDelegate(this);
         ui->listView->setItemDelegate(pItemDelegate);
         ui->listView->setModel(pModel);
-
-
-
 }
 
+//void showTalkBox(){
+//    myTalkBox = new TalkBox();
+//    myTalkBox->show();
+//}
 
 MainWindow::~MainWindow()
 {

@@ -20,7 +20,7 @@ class MainWindow: public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(int sockfd,int my_id,QWidget *parent = 0);
+    explicit MainWindow(int sockfd, int my_id, QWidget *parent = 0);
     ~MainWindow();
 
 private:

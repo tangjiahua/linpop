@@ -3,7 +3,8 @@
 #include <string>
 #include "mainwindow.h"
 
-char serverIp[20] = "10.194.33.149";
+
+char serverIp[20] = "10.194.41.208";
 int serverPort = 8888;
 char localIp[20];
 
@@ -67,8 +68,8 @@ void Login::loginTo()
     {
         //start interface
         qDebug() << "login successful" << endl;
-        main_window = new MainWindow(sockfd, atoi(lf.id));
-        main_window->show();
+          main_window = new MainWindow(sockfd, atoi(lf.id));
+          main_window->show();
         this->close();
 
     }
@@ -84,18 +85,10 @@ void Login::loginTo()
 
 void Login::registerTo()
 {
-    if(-1 == sockfd)
-    {
-        connectServer cs;
-        sockfd = cs.connectTo(serverIp,serverPort);
-        if(-1 == sockfd)
-        {
-            qDebug() << "register don't connect server" << endl;
-            return;
-        }
-    }
+
     regist = new Register(sockfd);
     regist->show();
 }
+
 
 

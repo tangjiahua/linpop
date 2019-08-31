@@ -16,6 +16,8 @@
 #include "QMessageBox"
 #include "QCursor"
 #include "string"
+
+
 QStandardItemModel *pModel = new QStandardItemModel();
 const QStringList icons = {
     ":/QQ/1.jpg", ":/QQ/2.jpeg", ":/QQ/5.jpg",
@@ -33,9 +35,23 @@ MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
+
     setGeometry(1500,0,266,675);
     ui->setupUi(this);
+    dragListFromServer();
+    setListView();
 
+
+}
+
+
+void MainWindow::dragListFromServer(){
+
+}
+
+
+void MainWindow::setListView(){
     QListWidgetItem *aItem; //每一行是一个QListWidgetItem
     //ui->listWidget->setViewMode(QListView::IconMode);
     ui->friendListWidget->clear(); //清除项
@@ -101,6 +117,8 @@ MainWindow::MainWindow(int sockfd, int my_id , QWidget *parent) :
 
 }
 
+
+
 void MainWindow::showMyTalkBox(){
     myTalkBox = new TalkBox();
     myTalkBox->show();
@@ -108,6 +126,8 @@ void MainWindow::showMyTalkBox(){
 
     qDebug()<<x;
 }
+
+
 
 void MainWindow::singleclicked(QListWidgetItem*item)
 
@@ -137,6 +157,11 @@ void MainWindow::singleclicked(QListWidgetItem*item)
         }
     return;
 }
+
+
+
+
+
 
 
 

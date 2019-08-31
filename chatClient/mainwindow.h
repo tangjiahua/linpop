@@ -8,7 +8,7 @@
 #include <QHBoxLayout>
 #include <QStandardItemModel>
 #include <QObject>
-#include <QTreeView>
+//#include <QTreeView>
 #include "talkbox.h"
 #include "QListWidget"
 namespace Ui {
@@ -36,6 +36,8 @@ private:
 private slots:
     void showMyTalkBox();
     void singleclicked(QListWidgetItem* item);
+    void dragListFromServer();
+    void setListView();
 };
 
 

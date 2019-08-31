@@ -64,7 +64,7 @@ void Login::loginTo()
     {
         //start interface
         qDebug() << "login successful" << endl;
-        main_window = new MainWindow(sockfd, atoi(lf.id));
+        main_window = new MainWindow(sockfd, lf.id);
         main_window->show();
         this->close();
 

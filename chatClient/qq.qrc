@@ -1,19 +1,14 @@
 <RCC>
     <qresource prefix="/QQ">
-        <file>1.jpg</file>
-        <file>2.jpeg</file>
-        <file>3.jpg</file>
-        <file>4.jpeg</file>
-        <file>5.jpg</file>
-        <file>6.jpeg</file>
-        <file>7.jpg</file>
+        <file>toolbox1.h</file>
+        <file>9.jpg</file>
         <file>8.jpg</file>
-        <file>9.jpeg</file>
-        <file>10.jpeg</file>
-        <file>11.jpeg</file>
-        <file>12.jpeg</file>
-        <file>13.jpeg</file>
-        <file>14.jpeg</file>
-        <file>15.jpeg</file>
+        <file>7.jpg</file>
+        <file>6.jpg</file>
+        <file>5.jpg</file>
+        <file>4.jpg</file>
+        <file>3.jpg</file>
+        <file>2.jpg</file>
+        <file>1.jpg</file>
     </qresource>
 </RCC>

@@ -23,7 +23,7 @@ class MainWindow: public QMainWindow
 
 public:
     TalkBox* myTalkBox;
-    explicit MainWindow(int sockfd, int my_id, QWidget *parent = 0);
+    explicit MainWindow(int sockfd, char *my_id, QWidget *parent = 0);
 
     ~MainWindow();
 
@@ -31,7 +31,7 @@ private:
     Ui::MainWindow *ui;
     QStandardItemModel *m_model;
     int sockfd;
-    int my_id;
+    char *my_id;
 
 private slots:
     void showMyTalkBox();

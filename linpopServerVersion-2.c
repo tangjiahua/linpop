@@ -682,64 +682,24 @@ int addFriend(char *buf, int confd)
 	MYSQL_RES *result;//结果集指针
 	MYSQL_ROW  row;//行结果
 	char uName[20]={0};
-	char pWord[20]={0};
-	char sqlStr[1024]={0};
 	char fName[20] = {0};
-	char code[7] = {0};
-
-	sscanf(buf+2,"%[^|]|%[^|]|%[^|]",uName, fName,code);
-	sprintf(sqlStr,"%s'%s'%s'%s';", "select groups from relation where account =",fName, "AND friendaccount=", uName);
+	char code[10] = {0};
+	char sqlStr[1024]={0};
+	sscanf(buf+2,"%[^|]",uName);
+	sscanf(buf+3+ strlen(uName),"%[^|]",fName);
+	sscanf(buf+4+ strlen(uName) + strlen(fName),"%s",code);
+	sprintf(sqlStr,"%s'%s'%s'%s';", "select * from relation where account = ", uName, "AND friendaccount = ", fName);
 	printf("%s\n", sqlStr);
 	mysql_init(&mysql);
-	if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
-	{
-		printf("%s\n",mysql_error(&mysql));
-		return -1;
-	}
-
-    //start quering
-	if(mysql_query(&mysql,sqlStr) != 0)
-	{
-		printf("%s\n",mysql_error(&mysql));
-		//release your command
-		 result = mysql_store_result(&mysql);
-		if (result)
-		{
-			mysql_free_result(result);
-			while (!mysql_next_result(&mysql))
-			{
-				result = mysql_store_result(&mysql);
-				mysql_free_result(result);
-			}
-		}
-		return -1;
-	}
-    
+	mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0);
+	mysql_query(&mysql,sqlStr);
 	result = mysql_store_result(&mysql);
-	if(result == NULL)
-	{
-        //没有收到数据库的任何数据
-		printf("%s\n",mysql_error(&mysql));
-		return -1;
-	}
-
-    //读取结果，返回结果集中的一行，数组，字符串数组
-	if(row = mysql_fetch_row(result))
-	{
-		if(strcmp(row[0], "0") == 0)
-		{
-			printf("在黑名单\n");
-            send(confd,"0",strlen("0"),0);
-		}
-		else
-		{
-			printf("已经在列表\n");
-            send(confd,"1",strlen("1"),0);
-		}
-	}else
-	{
-		//check code
-		result = mysql_store_result(&mysql);
+	if(row = mysql_fetch_row(result)){
+		//return 1
+		send(confd, "1", strlen("1"), 0);
+		return 1;
+	}else{
+		//not in my list
 		if (result)
 		{
 			mysql_free_result(result);
@@ -749,24 +709,18 @@ int addFriend(char *buf, int confd)
 				mysql_free_result(result);
 			}
 		}
-
-
 		memset(sqlStr, 0, sizeof(sqlStr));
-		sprintf(sqlStr,"%s'%s';", "select invcode from userlist where account = ", fName);
+		sprintf(sqlStr,"%s'%s'%s'%s'%s;", "select * from relation where account = ", fName, "AND friendaccount = ", uName, "AND groups = '0'" );
 		printf("%s\n", sqlStr);
-		mysql_init(&mysql);
-		if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
-		{
-			printf("%s\n",mysql_error(&mysql));
-			return -1;
+		mysql_query(&mysql,sqlStr);
+		result = mysql_store_result(&mysql);
+		if(row = mysql_fetch_row(result)){
+			//return 0
+			send(confd, "0", strlen("0"), 0);
+			return 1;
 		}
-
-		//start quering
-		if(mysql_query(&mysql,sqlStr) != 0)
-		{
-			printf("%s\n",mysql_error(&mysql));
-			//release your command
-			result = mysql_store_result(&mysql);
+		else{
+			//im not blocked
 			if (result)
 			{
 				mysql_free_result(result);
@@ -776,119 +730,48 @@ int addFriend(char *buf, int confd)
 					mysql_free_result(result);
 				}
 			}
-			return -1;
-		}
-
-		result = mysql_store_result(&mysql);
-		if(result == NULL)
-		{
-			//没有收到数据库的任何数据
-			printf("%s\n",mysql_error(&mysql));
-			return -1;
-		}
-
-		//读取结果，返回结果集中的一行，数组，字符串数组
-		if(row = mysql_fetch_row(result))
-		{
-			if(strcmp(row[0], code) == 0)
-			{
-				printf("invcode匹配正确\n");
-
-
+			memset(sqlStr, 0, sizeof(sqlStr));
+			sprintf(sqlStr,"%s'%s';", "select * from userlist where account = ", fName );
+			printf("%s\n", sqlStr);
+			mysql_query(&mysql,sqlStr);
+			result = mysql_store_result(&mysql);
+			if(row = mysql_fetch_row(result)){
+				//there is friendguy
 				memset(sqlStr, 0, sizeof(sqlStr));
-				sprintf(sqlStr,"%s'%s' , '%s', '1');", "insert into relation values(", uName, fName);
+				sprintf(sqlStr,"%s'%s';", "select invcode from userlist where account = ", fName);
 				printf("%s\n", sqlStr);
-				mysql_init(&mysql);
-				if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
-				{
-					printf("%s\n",mysql_error(&mysql));
-					return -1;
-				}
-
-				//start quering
-				if(mysql_query(&mysql,sqlStr) != 0)
-				{
-					printf("%s\n",mysql_error(&mysql));
-					//release your command
-					result = mysql_store_result(&mysql);
-					if (result)
-					{
-						mysql_free_result(result);
-						while (!mysql_next_result(&mysql))
-						{
-							result = mysql_store_result(&mysql);
-							mysql_free_result(result);
-						}
-					}
-					return -1;
-				}
-
+				mysql_query(&mysql,sqlStr);
 				result = mysql_store_result(&mysql);
-				if(result == NULL)
-				{
-					//没有收到数据库的任何数据
-					printf("%s\n",mysql_error(&mysql));
-					return -1;
+				if(row = mysql_fetch_row(result)){
+					//return 0
+					if(strcmp(code, row[0]) == 0){
+						//return 2 并且加入到数据库
+						send(confd, "2", strlen("2"), 0);
+						//add to mysql
+						memset(sqlStr, 0, sizeof(sqlStr));
+						sprintf(sqlStr,"%s'%s','%s','1');", "insert into relation values(", uName, fName );
+						printf("%s\n", sqlStr);
+						mysql_query(&mysql,sqlStr);
+						memset(sqlStr, 0, sizeof(sqlStr));
+						sprintf(sqlStr,"%s'%s','%s','1');", "insert into relation values(", fName, uName );
+						printf("%s\n", sqlStr);
+						mysql_query(&mysql,sqlStr);
+						return 1;
+					}else{
+						send(confd, "3", strlen("3"), 0);
+						return 1;
+					}
+				}else{
+					printf("搜索结果为空，怎么可能？");
+					return 1;
 				}
 				
-				memset(sqlStr, 0, sizeof(sqlStr));
-				sprintf(sqlStr,"%s'%s' , '%s', '1');", "insert into relation values(", fName, uName);
-				printf("%s\n", sqlStr);
-				mysql_init(&mysql);
-				if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
-				{
-					printf("%s\n",mysql_error(&mysql));
-					return -1;
-				}
-
-				//start quering
-				if(mysql_query(&mysql,sqlStr) != 0)
-				{
-					printf("%s\n",mysql_error(&mysql));
-					//release your command
-					result = mysql_store_result(&mysql);
-					if (result)
-					{
-						mysql_free_result(result);
-						while (!mysql_next_result(&mysql))
-						{
-							result = mysql_store_result(&mysql);
-							mysql_free_result(result);
-						}
-					}
-					return -1;
-				}
-
-				result = mysql_store_result(&mysql);
-				if(result == NULL)
-				{
-					//没有收到数据库的任何数据
-					printf("%s\n",mysql_error(&mysql));
-					return -1;
-				}
-
-				send(confd,"2",strlen("2"),0);
-			}
-			else
-			{
-				printf("invcode不匹配俄\n");
-				send(confd,"3",strlen("3"),0);
+			}else{
+				//return 4;
+				send(confd, "4", strlen("4"), 0);
+				return 1;
 			}
 		}
-
 	}
 
-
-    //release your command
-	result = mysql_store_result(&mysql);
-	if (result)
-	{
-		mysql_free_result(result);
-		while (!mysql_next_result(&mysql))
-		{
-			result = mysql_store_result(&mysql);
-			mysql_free_result(result);
-		}
-	}
-return 1;
 }

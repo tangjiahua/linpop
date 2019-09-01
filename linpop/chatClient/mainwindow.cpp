@@ -301,10 +301,10 @@ void MainWindow::setListView(){
 
 
 
-void MainWindow::showMyTalkBox(QString talkTo, QString photoAddr, QString signature){
+void MainWindow::showMyTalkBox(QString talkTo, QString photoAddr, QString signature,QStringList record){
     QStringList note = {0};
     //int x = ui->friendListWidget->currentRow();
-    TalkBox *talkbox =  new TalkBox(talkTo, photoAddr,signature);
+    TalkBox *talkbox =  new TalkBox(talkTo, photoAddr,signature, record);
     talkbox->show();
 }
 
@@ -327,6 +327,7 @@ void MainWindow::singleclicked(QListWidgetItem*item)
         position.setY(mouse->pos().y()-30);
         box.move(QPoint(position));
 
+        QStringList record={"1","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4"};
         int x = box.exec();
         switch (x) {
         case QMessageBox::Ok:{
@@ -377,9 +378,9 @@ void MainWindow::singleclicked(QListWidgetItem*item)
                 }
             }
             if(fwid != NULL){
-                showMyTalkBox(talker, talkerPhotoAddress, talkerSig);
+                showMyTalkBox(talker, talkerPhotoAddress, talkerSig,record);
             }else if(bwid != NULL){
-                showMyTalkBox(talker,talkerPhotoAddress, talkerSig);
+                showMyTalkBox(talker,talkerPhotoAddress, talkerSig,record);
             }
             break;
         }

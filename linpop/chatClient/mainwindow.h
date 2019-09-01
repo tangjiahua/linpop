@@ -11,6 +11,7 @@
 //#include <QTreeView>
 #include "talkbox.h"
 #include "QListWidget"
+#include "QTime"
 namespace Ui {
 class MainWindow;
 }
@@ -22,7 +23,7 @@ class MainWindow: public QMainWindow
     Q_OBJECT
 
 public:
-    TalkBox* myTalkBox;
+    TalkBox* myTalkBox[100] = {nullptr};
     explicit MainWindow(int sockfd, char *my_id, QWidget *parent = 0);
 
     ~MainWindow();
@@ -36,6 +37,7 @@ private:
 private slots:
     void showMyTalkBox();
     void singleclicked(QListWidgetItem* item);
+    void dragMyInformation();
     void dragListFromServer();
     void setListView();
 };

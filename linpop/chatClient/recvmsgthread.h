@@ -19,7 +19,11 @@ public:
     void start();
     static void* run(void* arg);
 signals:
-    void sendMsg_signal(Msg* msg);
+
+    void sendMsg_signal_0();
+    void sendMsg_signal_1();
+    void sendMsg_signal_2();
+    void internetdisconnect_signal();
 private:
     int sockfd;
     pthread_t thread;

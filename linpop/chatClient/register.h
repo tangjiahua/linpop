@@ -31,6 +31,12 @@ private:
 
 private slots:
     void commitTo();
+    void msg_received_0();
+
+    void msg_received_1();
+    void msg_received_2();
+
+    void internetdisconnected_received();
 };
 
 #endif // REGISTER_H

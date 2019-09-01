@@ -32,9 +32,14 @@ private:
     Register* regist;
     int sockfd;
     connectServer cs;
+    loginInfo lf;
 private slots:
     void loginTo();
     void registerTo();
+    void msg_received_0();
+    void msg_received_1();
+    void msg_received_2();
+    void internetdisconnected_received();
 };
 
 #endif // LOGIN_H

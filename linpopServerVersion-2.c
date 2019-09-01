@@ -10,7 +10,7 @@
 
 //server information
 int clientfd[1024] = {0};
-char serverIp[20] = "10.194.42.34";
+char serverIp[20] = "10.194.36.194";
 int serverPort = 8888;
 
 //functtions
@@ -18,12 +18,20 @@ void * handClient(void *arg);
 int userRegister(char *buf, int confd );
 int userLogin(char *buf, int confd);
 int dragList(char *buf, int confd);
+int dragInformation(char *buf, int confd);
 
 struct List{
 	char account[20];
 	char phaddr[2];
 	char state[2] ;
 	char group[2];
+};
+
+struct Information{
+	char account[20];
+	char phaddr[2];
+	char autograph[30];
+	char state[2];
 };
 
 //main program
@@ -105,6 +113,9 @@ void * handClient(void *arg)
 				break;
 			case '2':
 				dragList(buf, confd);
+				break;
+			case '3':
+				dragInformation(buf, confd);
 				break;
 			default:
 				printf("error!");
@@ -348,6 +359,151 @@ int dragList(char *buf, int confd){
 	
 	
     //release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+    return 1;
+}
+
+
+
+
+
+int dragInformation(char *buf, int confd){
+	MYSQL mysql;//句柄
+	MYSQL_RES *result;//结果集指针
+	MYSQL_ROW  row;//行结果
+	char uName[20]={0};
+	char sqlStr[1024]={0};
+	sscanf(buf+2,"%s",uName);
+	sprintf(sqlStr, "%s'%s';", "select * from information where account = ", uName);
+	//sprintf(sqlStr,"%s'%s'%s'%s'%s'%s'%s","select relation.friendaccount, information.phaddr, information.state, relation.groups from information, relation where relation.account = " ,uName," AND relation.friendaccount in (select relation.friendaccount from relation where relation.account =  ", uName,") AND information.account in (select relation.friendaccount from relation where relation.account = ",uName,") AND relation.friendaccount = information.account;");
+	printf("%s\n",sqlStr);
+	mysql_init(&mysql);
+	if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		return -1;
+	}
+
+    //start quering
+	if(mysql_query(&mysql,sqlStr) != 0)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		//release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+		return -1;
+	}
+    
+	result = mysql_store_result(&mysql);
+	if(result == NULL)
+	{
+        //没有收到数据库的任何数据
+		printf("%s\n",mysql_error(&mysql));
+		printf("hello\n");
+		return -1;
+	}
+    //读取结果，返回结果集中的一行，数组，字符串数组
+	//一共有4组数据，所以一共有4个ifelse语句
+	//printf("hello2\n");
+
+
+	struct Information myInformation;
+	while(1){
+		if(row = mysql_fetch_row(result)){
+			memset(myInformation.account, 0, sizeof(myInformation.account));
+			memset(myInformation.phaddr, 0, sizeof(myInformation.phaddr));
+			memset(myInformation.autograph, 0, sizeof(myInformation.autograph));
+			memset(myInformation.state, 0, sizeof(myInformation.state));
+
+			printf("%s %s %s %s\n",myInformation.account, myInformation.phaddr, myInformation.autograph, myInformation.state);
+
+			strcpy(myInformation.account, row[0]);
+			strcpy(myInformation.phaddr, row[1]); 
+			strcpy(myInformation.autograph, row[2]); 
+			strcpy(myInformation.state, row[3]);
+
+			strcpy(myInformation.account, row[0]);
+			strcpy(myInformation.phaddr, row[1]); 
+			strcpy(myInformation.autograph, row[2]); 
+			strcpy(myInformation.state, row[3]);
+
+			send(confd, &myInformation, sizeof(myInformation), 0);
+			printf("%s %s %s %s\n",myInformation.account, myInformation.phaddr, myInformation.autograph, myInformation.state);
+		}else{
+			printf("读取行数据失败\n");
+			break;
+		}
+		
+	}
+
+	memset(myInformation.account, 0,sizeof(myInformation.account));
+	memset(myInformation.phaddr, 0,sizeof(myInformation.phaddr));
+	memset(myInformation.autograph, 0,sizeof(myInformation.autograph));
+	memset(myInformation.state, 0,sizeof(myInformation.state));
+	send(confd,&myInformation, sizeof(myInformation), 0);
+	
+    //release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+
+
+	//set my state to be 1
+	memset(sqlStr, 0, sizeof(sqlStr));
+	sprintf(sqlStr, " %s'%s';", "update information set state = '1' where account = ", uName );	
+	printf("%s\n", sqlStr);
+	mysql_init(&mysql);
+		if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		return -1;
+	}
+	 //start quering
+	if(mysql_query(&mysql,sqlStr) != 0)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		//release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+		return -1;
+	}else{
+		printf("update successfully");
+	}
+	
+	//release your command
 		 result = mysql_store_result(&mysql);
 		if (result)
 		{

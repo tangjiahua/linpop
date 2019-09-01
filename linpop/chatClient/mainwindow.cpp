@@ -18,9 +18,14 @@
 #include "string"
 #include "connectserver.h"
 #include "QWidget"
+#include <QApplication>
 
 QStandardItemModel *pModel = new QStandardItemModel();
 
+struct TalkerInfo{
+    char talkerPhotoAddr[2];
+    char talkeSig[50];
+};
 
 struct List{
     char account[20];
@@ -36,6 +41,7 @@ struct Information{
     char state[2];
 };
 char tmpInformattion[2];
+
 
 
 
@@ -196,7 +202,8 @@ void MainWindow::setListView(){
             QLabel *TextLabel = new QLabel(frontArea);
 
             TextLabel->setText(friendName.at(i));//设置好友名字
-
+            TextLabel->setObjectName(QStringLiteral("nameLabel"));
+            TypeLabel->setObjectName(QStringLiteral("photoLabel"));
             QFont nameFont;
             nameFont.setFamily("微软雅黑");
             nameFont.setPointSize(12);
@@ -248,7 +255,7 @@ void MainWindow::setListView(){
 
             TextLabel->setText(friendName.at(i));//设置好友名字
             TextLabel->setObjectName(QStringLiteral("nameLabel"));
-
+            TypeLabel->setObjectName(QStringLiteral("photoLabel"));
             QFont nameFont;
             nameFont.setFamily("微软雅黑");
             nameFont.setPointSize(12);
@@ -294,20 +301,11 @@ void MainWindow::setListView(){
 
 
 
-void MainWindow::showMyTalkBox(){
+void MainWindow::showMyTalkBox(QString talkTo, QString photoAddr, QString signature){
     QStringList note = {0};
     //int x = ui->friendListWidget->currentRow();
-    TalkBox *talkbox =  new TalkBox("LEO", ":/QQ/1.jpg",note);
+    TalkBox *talkbox =  new TalkBox(talkTo, photoAddr,signature);
     talkbox->show();
-//    if(myTalkBox[x]==nullptr){
-//        myTalkBox[x] = new TalkBox("LEO", ":/QQ/1.jpg",note);
-//        myTalkBox[x]->show();
-//    }
-//    else{
-//        myTalkBox[x]->show();
-//        myTalkBox[x]->activateWindow();
-//    }
-
 }
 
 
@@ -333,24 +331,59 @@ void MainWindow::singleclicked(QListWidgetItem*item)
         switch (x) {
         case QMessageBox::Ok:{
 
-            //TODO: 1 means friendlist, 0measn blocklist
+            //TODO: 1 means friendlist, 0 measn blocklist
             QWidget *fwid = ui->friendListWidget->itemWidget(item);
             QWidget *bwid = ui->blockListWidget->itemWidget(item);
-            if(fwid != NULL){
-                QLabel *label = fwid->findChild<QLabel *>("nameLabel");
-                printf("%s\n", label->text());
-            }
+            QString talkerPhotoAddress;
+            QString talkerSig;
+            QString talker;
+            QString talkerPhotoAddress_temp;
+            QString talkerSig_temp;
             if(bwid != NULL){
                 QLabel *label = bwid->findChild<QLabel *>("nameLabel");
-                if(label != NULL){
-                    qDebug()<<label->text();
-                }
-
+                talker = label->text();
+            }
+            else{
+                QLabel *label = fwid->findChild<QLabel *>("nameLabel");
+                qDebug()<<label->text()<<endl;
+                talker = label->text();
             }
 
-            showMyTalkBox();
+            //drag photo and sigfrom server
+            char dragByName[40] = {0};
+            strcat(dragByName, "6");
+            strcat(dragByName, "|");
+            strcat(dragByName, talker.toLatin1());
+            ssize_t size = send(sockfd,(void*)&dragByName,sizeof(dragByName),0);
+            if(size == -1){
+                qDebug()<< "send message error" << endl;
+                return;
+            }
+            struct TalkerInfo talkerWindowInfo;
+            while(size = recv(sockfd, &talkerWindowInfo, sizeof(talkerWindowInfo), 0)){
+                if(size < 0){
+                    qDebug()<<"send msg error"<<endl;
+                    return;
+                }else if(size == 0){
+                    //connection problem
+                }else{
+                    if(talkerWindowInfo.talkerPhotoAddr[0] == '\0'){
+                        break;
+                    }
+                    talkerPhotoAddress = QString(QLatin1String(talkerWindowInfo.talkerPhotoAddr));
+                    talkerSig = QString(QLatin1String(talkerWindowInfo.talkeSig));
+                    break;
+
+                }
+            }
+            if(fwid != NULL){
+                showMyTalkBox(talker, talkerPhotoAddress, talkerSig);
+            }else if(bwid != NULL){
+                showMyTalkBox(talker,talkerPhotoAddress, talkerSig);
+            }
             break;
         }
+
         default:
             qDebug()<<"nothing";
             break;
@@ -360,13 +393,46 @@ void MainWindow::singleclicked(QListWidgetItem*item)
 
 
 
-
+void MainWindow::closeEvent(QCloseEvent *event){
+    if(QMessageBox::question(this, tr("Quit"), tr("Are you sure to quit this application?"), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes){
+        char quitAsk[40] = {0};
+        strcat(quitAsk, "5");
+        strcat(quitAsk, "|");
+        strcat(quitAsk, my_id);
+        ssize_t size = send(sockfd,(void*)&quitAsk,sizeof(quitAsk),0);
+        if(size == -1){
+            qDebug()<< "send message error" << endl;
+            return;
+        }
+        char quitResult[10];
+        memset(quitResult, 0,sizeof(quitResult));
+            while(size = recv(sockfd, &quitResult, sizeof(quitResult),0)){
+                if(size < 0){
+                    qDebug()<< "send message error\n" << endl;
+                    return;
+                }else if(size == 0){
+                    printf("Connection closed\n");
+                    return;
+                }else{
+                    if(quitResult[0] == 'q'){
+                    qDebug()<<"quit successfully!"<<endl;
+                    break;
+                    }
+                }
+            }
+        event->accept();
+        qApp->quit();
+    }else{
+        event->ignore();
+    }
+}
 
 
 
 
 MainWindow::~MainWindow()
 {
+    qDebug()<<"end program"<<endl;
     delete ui;
 }
 

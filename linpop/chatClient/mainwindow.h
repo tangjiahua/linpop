@@ -31,15 +31,17 @@ public:
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *m_model;
+
     int sockfd;
     char *my_id;
 
 private slots:
-    void showMyTalkBox();
+    void showMyTalkBox(QString talkTo, QString photoAddr, QString signature);
     void singleclicked(QListWidgetItem* item);
     void dragMyInformation();
     void dragListFromServer();
     void setListView();
+    void closeEvent(QCloseEvent *event);
 };
 
 

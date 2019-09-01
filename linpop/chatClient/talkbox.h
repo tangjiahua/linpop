@@ -12,7 +12,7 @@ class TalkBox : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit TalkBox(QString addrofname, QString addrofpicture,QStringList record,QWidget *parent = 0);
+    explicit TalkBox(QString addrofname, QString addrofpicture,QString record,QWidget *parent = 0);
     ~TalkBox();
     QStringList talkboxrecord;
     //int recordno;

@@ -10,7 +10,7 @@
 
 //server information
 int clientfd[1024] = {0};
-char serverIp[20] = "10.194.36.194";
+char serverIp[20] = "10.195.108.2";
 int serverPort = 8888;
 
 //functtions
@@ -19,6 +19,14 @@ int userRegister(char *buf, int confd );
 int userLogin(char *buf, int confd);
 int dragList(char *buf, int confd);
 int dragInformation(char *buf, int confd);
+int quitAsk(char *buf, int confd);
+int dragTalkerInfo(char *buf, int confd);
+int addFriend(char *buf, int confd);
+
+struct TalkerInfo{
+    char talkerPhotoAddr[2];
+    char talkeSig[50];
+};
 
 struct List{
 	char account[20];
@@ -116,6 +124,15 @@ void * handClient(void *arg)
 				break;
 			case '3':
 				dragInformation(buf, confd);
+				break;
+			case '4':
+				addFriend(buf, confd);
+				break;
+			case '5':
+				quitAsk(buf, confd);
+				break;
+			case '6':
+				dragTalkerInfo(buf, confd);
 				break;
 			default:
 				printf("error!");
@@ -515,4 +532,363 @@ int dragInformation(char *buf, int confd){
 			}
 		}
     return 1;
+}
+
+
+int quitAsk(char *buf, int confd){
+	MYSQL mysql;//句柄
+	MYSQL_RES *result;//结果集指针
+	MYSQL_ROW  row;//行结果
+	char uName[20]={0};
+	char sqlStr[1024]={0};
+	sscanf(buf+2,"%s",uName);
+	sprintf(sqlStr,"%s'%s';","update information set state = '0' where account = ",uName);
+	printf("%s\n",sqlStr);
+	mysql_init(&mysql);
+	if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		return -1;
+	}
+
+    //start quering
+	if(mysql_query(&mysql,sqlStr) != 0)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		//release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+		return -1;
+	}else{
+		send(confd,"qqqqqqqq",strlen("qqqqqqqq"),0);
+	}
+    
+	
+	
+	//release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+    return 1;
+	
+
+
+}
+
+
+
+
+int dragTalkerInfo(char *buf, int confd){
+
+	MYSQL mysql;//句柄
+	MYSQL_RES *result;//结果集指针
+	MYSQL_ROW  row;//行结果
+	char uName[20]={0};
+	char sqlStr[1024]={0};
+	sscanf(buf+2,"%s",uName);
+	sprintf(sqlStr,"%s'%s';","select phaddr, autograph from information where account = ",uName);
+	printf("%s\n",sqlStr);
+	mysql_init(&mysql);
+	if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		return -1;
+	}
+
+    //start quering
+	if(mysql_query(&mysql,sqlStr) != 0)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		//release your command
+		printf("hello here");
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+		return -1;
+	}else{
+		struct TalkerInfo talkerInfo;
+		memset(talkerInfo.talkeSig, 0, sizeof(talkerInfo.talkeSig));
+		memset(talkerInfo.talkerPhotoAddr, 0, sizeof(talkerInfo.talkerPhotoAddr));
+		result = mysql_store_result(&mysql);
+		while(1){
+			printf("nihao");
+		if(row = mysql_fetch_row(result))
+		{
+			printf("hello112312");
+			memset(talkerInfo.talkerPhotoAddr, 0,sizeof(talkerInfo.talkerPhotoAddr));
+			memset(talkerInfo.talkeSig, 0,sizeof(talkerInfo.talkeSig));
+			
+			
+			strcpy(talkerInfo.talkerPhotoAddr, row[0]);
+			strcpy(talkerInfo.talkeSig, row[1]); 
+			printf("%s %s \n", talkerInfo.talkerPhotoAddr,talkerInfo.talkeSig);
+			send(confd, &talkerInfo, sizeof(talkerInfo), 0);
+			
+		}else{
+			printf("读取行数据失败\n");
+			break;
+		}
+	}
+
+	
+	}
+    
+	
+	
+	//release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+    return 1;
+
+
+
+}
+
+
+
+int addFriend(char *buf, int confd)
+{
+	MYSQL mysql;//句柄
+	MYSQL_RES *result;//结果集指针
+	MYSQL_ROW  row;//行结果
+	char uName[20]={0};
+	char pWord[20]={0};
+	char sqlStr[1024]={0};
+	char fName[20] = {0};
+	char code[7] = {0};
+
+	sscanf(buf+2,"%[^|]|%[^|]|%[^|]",uName, fName,code);
+	sprintf(sqlStr,"%s'%s'%s'%s';", "select groups from relation where account =",fName, "AND friendaccount=", uName);
+	printf("%s\n", sqlStr);
+	mysql_init(&mysql);
+	if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		return -1;
+	}
+
+    //start quering
+	if(mysql_query(&mysql,sqlStr) != 0)
+	{
+		printf("%s\n",mysql_error(&mysql));
+		//release your command
+		 result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+		return -1;
+	}
+    
+	result = mysql_store_result(&mysql);
+	if(result == NULL)
+	{
+        //没有收到数据库的任何数据
+		printf("%s\n",mysql_error(&mysql));
+		return -1;
+	}
+
+    //读取结果，返回结果集中的一行，数组，字符串数组
+	if(row = mysql_fetch_row(result))
+	{
+		if(strcmp(row[0], "0") == 0)
+		{
+			printf("在黑名单\n");
+            send(confd,"0",strlen("0"),0);
+		}
+		else
+		{
+			printf("已经在列表\n");
+            send(confd,"1",strlen("1"),0);
+		}
+	}else
+	{
+		//check code
+		result = mysql_store_result(&mysql);
+		if (result)
+		{
+			mysql_free_result(result);
+			while (!mysql_next_result(&mysql))
+			{
+				result = mysql_store_result(&mysql);
+				mysql_free_result(result);
+			}
+		}
+
+
+		memset(sqlStr, 0, sizeof(sqlStr));
+		sprintf(sqlStr,"%s'%s';", "select invcode from userlist where account = ", fName);
+		printf("%s\n", sqlStr);
+		mysql_init(&mysql);
+		if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+		{
+			printf("%s\n",mysql_error(&mysql));
+			return -1;
+		}
+
+		//start quering
+		if(mysql_query(&mysql,sqlStr) != 0)
+		{
+			printf("%s\n",mysql_error(&mysql));
+			//release your command
+			result = mysql_store_result(&mysql);
+			if (result)
+			{
+				mysql_free_result(result);
+				while (!mysql_next_result(&mysql))
+				{
+					result = mysql_store_result(&mysql);
+					mysql_free_result(result);
+				}
+			}
+			return -1;
+		}
+
+		result = mysql_store_result(&mysql);
+		if(result == NULL)
+		{
+			//没有收到数据库的任何数据
+			printf("%s\n",mysql_error(&mysql));
+			return -1;
+		}
+
+		//读取结果，返回结果集中的一行，数组，字符串数组
+		if(row = mysql_fetch_row(result))
+		{
+			if(strcmp(row[0], code) == 0)
+			{
+				printf("invcode匹配正确\n");
+
+
+				memset(sqlStr, 0, sizeof(sqlStr));
+				sprintf(sqlStr,"%s'%s' , '%s', '1');", "insert into relation values(", uName, fName);
+				printf("%s\n", sqlStr);
+				mysql_init(&mysql);
+				if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+				{
+					printf("%s\n",mysql_error(&mysql));
+					return -1;
+				}
+
+				//start quering
+				if(mysql_query(&mysql,sqlStr) != 0)
+				{
+					printf("%s\n",mysql_error(&mysql));
+					//release your command
+					result = mysql_store_result(&mysql);
+					if (result)
+					{
+						mysql_free_result(result);
+						while (!mysql_next_result(&mysql))
+						{
+							result = mysql_store_result(&mysql);
+							mysql_free_result(result);
+						}
+					}
+					return -1;
+				}
+
+				result = mysql_store_result(&mysql);
+				if(result == NULL)
+				{
+					//没有收到数据库的任何数据
+					printf("%s\n",mysql_error(&mysql));
+					return -1;
+				}
+				
+				memset(sqlStr, 0, sizeof(sqlStr));
+				sprintf(sqlStr,"%s'%s' , '%s', '1');", "insert into relation values(", fName, uName);
+				printf("%s\n", sqlStr);
+				mysql_init(&mysql);
+				if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
+				{
+					printf("%s\n",mysql_error(&mysql));
+					return -1;
+				}
+
+				//start quering
+				if(mysql_query(&mysql,sqlStr) != 0)
+				{
+					printf("%s\n",mysql_error(&mysql));
+					//release your command
+					result = mysql_store_result(&mysql);
+					if (result)
+					{
+						mysql_free_result(result);
+						while (!mysql_next_result(&mysql))
+						{
+							result = mysql_store_result(&mysql);
+							mysql_free_result(result);
+						}
+					}
+					return -1;
+				}
+
+				result = mysql_store_result(&mysql);
+				if(result == NULL)
+				{
+					//没有收到数据库的任何数据
+					printf("%s\n",mysql_error(&mysql));
+					return -1;
+				}
+
+				send(confd,"2",strlen("2"),0);
+			}
+			else
+			{
+				printf("invcode不匹配俄\n");
+				send(confd,"3",strlen("3"),0);
+			}
+		}
+
+	}
+
+
+    //release your command
+	result = mysql_store_result(&mysql);
+	if (result)
+	{
+		mysql_free_result(result);
+		while (!mysql_next_result(&mysql))
+		{
+			result = mysql_store_result(&mysql);
+			mysql_free_result(result);
+		}
+	}
+return 1;
 }

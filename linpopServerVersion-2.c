@@ -10,7 +10,7 @@
 
 //server information
 int clientfd[1024] = {0};
-char serverIp[20] = "10.195.15.196";
+char serverIp[20] = "10.194.42.34";
 int serverPort = 8888;
 
 //functtions
@@ -273,7 +273,7 @@ int dragList(char *buf, int confd){
 	char uName[20]={0};
 	char sqlStr[1024]={0};
 	sscanf(buf+2,"%s",uName);
-	sprintf(sqlStr,"%s'%s'%s'%s';", "select relation.friendaccount, information.phaddr, information.state, relation.groups from information, relation where information.account=",uName,"AND relation.account=",uName);
+	sprintf(sqlStr,"%s'%s'%s'%s'%s'%s'%s","select relation.friendaccount, information.phaddr, information.state, relation.groups from information, relation where relation.account = " ,uName," AND relation.friendaccount in (select relation.friendaccount from relation where relation.account =  ", uName,") AND information.account in (select relation.friendaccount from relation where relation.account = ",uName,") AND relation.friendaccount = information.account;");
 	printf("%s\n",sqlStr);
 	mysql_init(&mysql);
 	if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)

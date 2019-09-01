@@ -12,8 +12,13 @@ class TalkBox : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit TalkBox(QWidget *parent = 0);
+    explicit TalkBox(QString addrofname, QString addrofpicture,QStringList record,QWidget *parent = 0);
     ~TalkBox();
+    QStringList talkboxrecord;
+    //int recordno;
+
+private slots:
+    void on_pushButton_2_clicked();
 
 private:
     Ui::TalkBox *ui;

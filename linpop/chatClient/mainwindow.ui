@@ -29,28 +29,12 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QFrame" name="headSnap">
+   <widget class="QLabel" name="userpicture">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>20</x>
       <y>20</y>
       <width>51</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="userName">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>20</y>
-      <width>131</width>
       <height>51</height>
      </rect>
     </property>
@@ -64,7 +48,7 @@
       <x>10</x>
       <y>80</y>
       <width>241</width>
-      <height>521</height>
+      <height>501</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -76,11 +60,11 @@
        <x>0</x>
        <y>0</y>
        <width>241</width>
-       <height>453</height>
+       <height>439</height>
       </rect>
      </property>
      <attribute name="label">
-      <string>Page 1</string>
+      <string>Friends List</string>
      </attribute>
      <widget class="QListWidget" name="friendListWidget">
       <property name="geometry">
@@ -99,13 +83,49 @@
        <x>0</x>
        <y>0</y>
        <width>241</width>
-       <height>453</height>
+       <height>439</height>
       </rect>
      </property>
      <attribute name="label">
-      <string>页</string>
+      <string>Block List</string>
      </attribute>
+     <widget class="QListWidget" name="blockListWidget">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>241</width>
+        <height>431</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
+   </widget>
+   <widget class="QLabel" name="username">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>20</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="usersignature">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>60</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

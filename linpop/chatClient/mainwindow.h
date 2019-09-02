@@ -36,7 +36,7 @@ private:
     char *my_id;
 
 private slots:
-    void showMyTalkBox(QString talkTo, QString photoAddr, QString signature,QStringList record);
+    void showMyTalkBox(int sockfd, QString myAccount, QString talkTo, QString photoAddr, QString signature,QStringList record);
     void singleclicked(QListWidgetItem* item);
     void dragMyInformation();
     void dragListFromServer();

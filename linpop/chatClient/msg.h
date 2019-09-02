@@ -1,12 +1,5 @@
-#ifndef MSG
-#define MSG
+#ifndef MSG_H
+#define MSG_H
 
-struct Msg
-{
-    int to_user_id;//if user_id is 0,perform all user
-    int from_user_id;
-    char from_user_name[20];
-    char msg[256];//msg text
-};
-#endif // MSG
+#endif // MSG_H
 

@@ -2,12 +2,34 @@
 #include "ui_talkbox.h"
 #include "qscrollbar.h"
 #include "qmessagebox.h"
-TalkBox::TalkBox(QString addrofname, QString addrofpicture,QString signature,QStringList record,QWidget *parent) :
+#include "QTime"
+
+
+int gSockfd;
+QString gmyAccount;
+QString gaddrofname;
+QString gaddrofpicture;
+QString gsignature;
+QStringList grecord;
+
+void* recvThread(void *args);
+
+TalkBox::TalkBox(int sockfd, QString myAccount, QString addrofname, QString addrofpicture,QString signature,QStringList record,QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::TalkBox)
 {
+    gSockfd = sockfd;
+    gmyAccount = myAccount;
+    gaddrofname = addrofname;
+    gaddrofpicture = addrofpicture;
+    gsignature = signature;
+    grecord = record;
+
+    //设置聊天窗口的各种讯息
     setGeometry(600,100,266,675);
     ui->setupUi(this);
+    connect(ui->pushButton,SIGNAL(clicked()),this,SLOT(on_sendButton_clicked()));
+    connect(ui->pushButton,SIGNAL(clicked()),this,SLOT(on_pushButton_clicked()));
 
     QString phoAdd;
     phoAdd.append(":/QQ/");
@@ -20,9 +42,27 @@ TalkBox::TalkBox(QString addrofname, QString addrofpicture,QString signature,QSt
     ui->talkername->setText(addrofname);
     ui->talkersignature->setText(signature);
 
+    //TODO::设置抓取往常的聊天记录
     talkboxrecord=record;
     recordno=talkboxrecord.count()-1;
     ui->textEdit->clear();
+
+
+    //TODO::每次打开这个要先从服务器抓取十条原来的记录
+
+    int ret;
+    //TODO::开始新线程recv;
+    pthread_t thread;
+    ret = pthread_create(&thread, NULL, recvThread, NULL);
+    if(0 != ret){
+        qDebug()<<"create thread is fail"<<endl;
+    }
+
+
+
+
+    //TODO::一接受到就打印在上面
+
 
 }
 
@@ -31,14 +71,10 @@ TalkBox::~TalkBox()
     delete ui;
 }
 
-void TalkBox::on_pushButton_2_clicked()
-{
-    QTextCursor talkboxcursor=ui->textEdit->textCursor();
-    ui->textEdit->append(ui->lineEdit->toPlainText());
+void* recvThread(void *args){
+    while(1){
 
-    ui->lineEdit->clear();
-    QScrollBar *scrollbar = ui->textEdit->verticalScrollBar();
-    scrollbar->setSliderPosition(scrollbar->maximum());
+    }
 }
 
 void TalkBox::on_pushButton_clicked()
@@ -71,4 +107,66 @@ void TalkBox::on_pushButton_clicked()
 
 
 
+}
+
+void TalkBox::on_sendButton_clicked()
+{
+    QTime t = QTime::currentTime();
+        QString text = t.toString("hh:mm:ss");
+        struct Msg{
+            char *uName;
+            char *fName;
+            char *sendDate;
+            char *sendMessage;
+        };
+
+        struct Msg msg;
+//        memset(msg.uName, 0, sizeof(msg.uName));
+//        memset(msg.fName, 0, sizeof(msg.fName));
+//        memset(msg.sendDate, 0, sizeof(msg.sendDate));
+//        memset(msg.sendMessage, 0, sizeof(msg.sendMessage));
+
+        //首先把lineEdit内容发送给服务器
+        QString message = ui->textEdit->toPlainText();
+        QByteArray tmp1;
+        tmp1 = gmyAccount.toLatin1();
+        msg.uName = tmp1.data();
+
+        QByteArray tmp2;
+        tmp2 = gaddrofname.toLatin1();
+        msg.fName = tmp2.data();
+
+        QByteArray tmp3;
+        tmp3 = ui->lineEdit->toPlainText().toLatin1();
+        msg.sendMessage = tmp3.data();
+        tmp3.clear();
+
+        QByteArray tmp4;
+        tmp4 = text.toLatin1();
+        msg.sendDate = tmp4.data();
+        tmp4.clear();
+
+        //qDebug()<<msg.uName<<msg.fName<<msg.sendDate<<msg.sendMessage<<endl;
+        char msgBox[300];
+        memset(msgBox, 0, sizeof(msgBox));
+        strcat(msgBox, "7|");
+        strcat(msgBox, msg.uName);
+        strcat(msgBox, "|");
+        strcat(msgBox, msg.fName);
+        strcat(msgBox, "|");
+        strcat(msgBox, msg.sendDate);
+        strcat(msgBox, "|");
+        strcat(msgBox, msg.sendMessage);
+        send(gSockfd, &msgBox, sizeof(msgBox), 0);
+
+
+
+
+        //把本地的lineEdit内容发送到框上
+        //QTextCursor talkboxcursor = ui->textEdit->textCursor();
+        ui->textEdit->append(ui->lineEdit->toPlainText());
+        ui->lineEdit->clear();
+        QScrollBar *scrollbar = ui->textEdit->verticalScrollBar();
+        scrollbar->setSliderPosition(scrollbar->maximum());
+        return;
 }

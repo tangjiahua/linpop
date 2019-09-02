@@ -7,7 +7,6 @@ int main(int argc, char *argv[])
     Login login_window;
     login_window.show();
 
-
     return linpop.exec();
 }
 

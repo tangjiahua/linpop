@@ -110,17 +110,17 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>430</x>
-      <y>10</y>
-      <width>89</width>
+      <x>370</x>
+      <y>50</y>
+      <width>141</width>
       <height>25</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Drag lateset record</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="sendButton">
     <property name="geometry">
      <rect>
       <x>460</x>
@@ -130,7 +130,7 @@ p, li { white-space: pre-wrap; }
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Send</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="lineEdit">

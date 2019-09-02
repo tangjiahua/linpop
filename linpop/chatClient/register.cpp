@@ -18,7 +18,7 @@ Register::~Register()
 
 void Register::commitTo()
 {
-    char serverIp[20] = "10.195.108.2";
+    char serverIp[20] = "10.194.43.253";
     int serverPort = 8888;
     char localIp[20];
     char registInfo[50] = {0};

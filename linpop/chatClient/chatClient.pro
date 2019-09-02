@@ -13,7 +13,6 @@ TEMPLATE = app
 
 LIBS += -lpthread
 SOURCES += main.cpp\
-        interface.cpp \
     login.cpp \
     connectserver.cpp \
     register.cpp \
@@ -22,11 +21,10 @@ SOURCES += main.cpp\
     mulitemdelegate.cpp \
     talkbox.cpp
 
-HEADERS  += interface.h \
+HEADERS  += \
     login.h \
     connectserver.h \
     register.h \
-    msg.h \
     recvmsgthread.h \
     mainwindow.h \
     mulitemdelegate.h \

@@ -90,6 +90,7 @@ void MainWindow::dragMyInformation(){
     }
     struct Information myInformation;
 
+    //TODO:1
 
     while(size = recv(sockfd, &myInformation, sizeof(myInformation),0)){
         if(size < 0){
@@ -140,6 +141,8 @@ void MainWindow::dragListFromServer(){
     }
     struct List ReceiveBuffer;
 
+    
+    //TODO:2
     while(size = recv(sockfd, &ReceiveBuffer, sizeof(ReceiveBuffer),0)){
         if(size < 0){
             qDebug()<< "send message error\n" << endl;

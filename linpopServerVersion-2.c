@@ -10,7 +10,8 @@
 
 //server information
 int clientfd[1024] = {0};
-char serverIp[20] = "10.195.108.2";
+char accountClientfd[1024][20] = {0};
+char serverIp[20] = "10.194.43.253";
 int serverPort = 8888;
 
 //functtions
@@ -22,6 +23,14 @@ int dragInformation(char *buf, int confd);
 int quitAsk(char *buf, int confd);
 int dragTalkerInfo(char *buf, int confd);
 int addFriend(char *buf, int confd);
+int sendMsg(char *buf, int confd);
+
+struct Msg{
+	char  uName[20];
+	char fName[20];
+	char sendDate[30];
+	char sendMessage[200];
+};
 
 struct TalkerInfo{
     char talkerPhotoAddr[2];
@@ -133,6 +142,9 @@ void * handClient(void *arg)
 				break;
 			case '6':
 				dragTalkerInfo(buf, confd);
+				break;
+			case '7':
+				sendMsg(buf, confd);
 				break;
 			default:
 				printf("error!");
@@ -265,6 +277,13 @@ int userLogin(char *buf, int confd)
 		{
 			printf("登录成功\n");
             send(confd,"1",strlen("1"),0);
+			//search clientfd find confd and make accountconfd[1024] = account
+			for(int i = 0; i < 1024; i++){
+				if(clientfd[i] == confd){
+					strcat(accountClientfd[i], uName);
+					break;
+				}
+			}
 		}
 		else
 		{
@@ -568,6 +587,13 @@ int quitAsk(char *buf, int confd){
 		}
 		return -1;
 	}else{
+		//make accountfd to be ""
+		for(int i = 0; i < 1024; i++){
+			if(clientfd[i] == confd){
+				memset(accountClientfd[i], 0, sizeof(accountClientfd[i]) );
+				break;
+			}
+		}
 		send(confd,"qqqqqqqq",strlen("qqqqqqqq"),0);
 	}
     
@@ -773,5 +799,123 @@ int addFriend(char *buf, int confd)
 			}
 		}
 	}
+
+}
+
+
+
+int sendMsg(char *buf, int confd){
+	MYSQL mysql;//句柄
+	MYSQL_RES *result;//结果集指针
+	MYSQL_ROW  row;//行结果
+	
+	struct Msg msg;
+	memset(msg.uName, 0,sizeof(msg.uName));
+	memset(msg.fName, 0,sizeof(msg.fName));
+	memset(msg.sendDate, 0,sizeof(msg.sendDate));
+	memset(msg.sendMessage, 0,sizeof(msg.sendMessage));
+	
+	char sqlStr[1024]={0};
+	sscanf(buf+2,"%[^|]|%[^|]|%[^|]|%[^|]",msg.uName, msg.fName, msg.sendDate, msg.sendMessage);
+	sprintf(sqlStr,"%s'%s','%s','%s','%s');", "insert into record values( ", msg.uName, msg.fName, msg.sendDate, msg.sendMessage);
+	printf("%s\n", sqlStr);
+	mysql_init(&mysql);
+	mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0);
+	
+
+	if(mysql_query(&mysql, sqlStr) != 0){
+                //插入失败，未知原因
+                send(confd,"0",strlen("0"),0);
+                //release your command
+                result = mysql_store_result(&mysql);
+                if (result){
+                        mysql_free_result(result);
+                        while (!mysql_next_result(&mysql))
+                        {
+                            result = mysql_store_result(&mysql);
+                            mysql_free_result(result);
+                        }
+                    }
+            }else{
+                //插入成功
+				int fConfd;
+				int flag = 0;
+				for(int i = 0; i < 1024; i++){
+					if(strcmp(accountClientfd[i], msg.fName) == 0){
+						//找到了fconfd
+						printf("find friendConfd\n");
+						printf("friend confd : %d\n",fConfd);
+						printf("friend name: %s\n", accountClientfd[i]);
+						fConfd = clientfd[i];
+						flag = 1;
+						break;
+					}
+				}
+				if(flag ==0){
+					printf("对方不zaixian\n");
+					result = mysql_store_result(&mysql);
+						if (result){
+								mysql_free_result(result);
+								while (!mysql_next_result(&mysql))
+								{
+									result = mysql_store_result(&mysql);
+									mysql_free_result(result);
+								}
+							}
+						return 1;
+				}
+				
+				//
+				//if he online, just send to him, if he offline, do nothing;
+
+				//release your command
+                result = mysql_store_result(&mysql);
+                if (result){
+                        mysql_free_result(result);
+                        while (!mysql_next_result(&mysql))
+                        {
+                            result = mysql_store_result(&mysql);
+                            mysql_free_result(result);
+                        }
+                    }
+				memset(sqlStr, 0, sizeof(sqlStr));
+				sprintf(sqlStr,"%s'%s';", "select state from information where account = ",msg.fName);
+				printf("%s\n", sqlStr);
+
+
+				mysql_query(&mysql,sqlStr);
+				result = mysql_store_result(&mysql);
+				if(row = mysql_fetch_row(result)){
+					if(strcmp(row[0], "0") == 0){
+						//对方不在线 
+						result = mysql_store_result(&mysql);
+						if (result){
+								mysql_free_result(result);
+								while (!mysql_next_result(&mysql))
+								{
+									result = mysql_store_result(&mysql);
+									mysql_free_result(result);
+								}
+							}
+						return 1;
+					}else if(strcmp(row[0], "1") == 0){
+						//对方在线
+						printf("!!!!!!!!!!!!!!!!!!!!!!!%s %s %s %s\n",msg.uName, msg.fName, msg.sendDate, msg.sendMessage);
+						send(fConfd, &msg, sizeof(msg), 0);
+						return 1;
+					}else{
+						printf("其他结果，不在也在？？？no way\n");
+						return 1;
+					}
+				}else{
+					printf("error, 怎么可能查无此人？？？\n");
+					return 1;
+				}
+
+
+
+				//memset all information
+				//release your command
+            }
 
 }

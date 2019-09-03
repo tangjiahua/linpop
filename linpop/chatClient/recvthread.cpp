@@ -22,12 +22,14 @@ void* recvThread::run(void* arg)
 {
     recvThread* th = (recvThread*)(arg);
 
-    char message[300]  ={0};
+    char message[300]  = {0};
+    char messageCopy[300] = {0};
     while(1)
     {
         //memset(&msg,0,sizeof(msg));
-        //memset(message,0,sizeof(message));
+        memset(message,0,sizeof(message));
         qDebug()<<"start receiving"<<endl;
+
 
         int ret = recv(th->sockfd,message,sizeof(message),0);
 
@@ -35,23 +37,28 @@ void* recvThread::run(void* arg)
             qDebug()<<"unknown error when recv message ret!!!!!!!"<<endl;
             emit th->unknownerror();
         }
+        memset(messageCopy, 0, sizeof(messageCopy));
+        strcat(messageCopy, message);
+
         qDebug() << "recv a message: " << message << endl;
         char head = message[0];
         qDebug()<<"head == "<<head<<endl;
         switch(head){
             case '1':break;
-        case '2':emit th->signal2(message);break;
+        case '2':emit th->signal2(messageCopy);break;
         case '3':
-            qDebug()<<"message == "<<message<<endl;
-            emit th->signal3(message);
+            qDebug()<<"message == "<<messageCopy<<endl;
+            emit th->signal3(messageCopy);
 
             break;
         case '4':break;
             case '5':break;
             case '6':break;
             case '7':
-           qDebug()<<"message == "<<message<<endl;
-            emit th->signal7(message);
+            qDebug()<<"message == "<<messageCopy<<endl;
+
+
+            emit th->signal7(messageCopy);
 
             break;
             case '8':break;
@@ -59,7 +66,7 @@ void* recvThread::run(void* arg)
             case 'b':break;
             case 'c':break;
             case 'd':break;
-        case 'x':emit th->signalx(message);
+        case 'x':emit th->signalx(messageCopy);
             break;
         }
 //        emit th->sendMsg_signal(message);

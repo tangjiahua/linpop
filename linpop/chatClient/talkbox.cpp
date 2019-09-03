@@ -2,25 +2,27 @@
 #include "ui_talkbox.h"
 #include "qscrollbar.h"
 #include "qmessagebox.h"
+#include "mainwindow.h"
 #include "QTime"
 
 
-int gSockfd;
-QString gmyAccount;
-QString gaddrofname;
-QString gaddrofpicture;
-QString gsignature;
-QStringList grecord;
+//int gSockfd;
+//QString gmyAccount;
+//QString gaddrofname;
+//QString gaddrofpicture;
+//QString gsignature;
+//QStringList grecord;
 
 void* recvThread(void *args);
 
-TalkBox::TalkBox(int sockfd, QString myAccount, QString addrofname,QWidget *parent) :
+TalkBox::TalkBox(int tsockfd, QString tmyAccount, QString taddrofname,QWidget *tparent) :
     QMainWindow(parent),
     ui(new Ui::TalkBox)
 {
-    gSockfd = sockfd;
-    gmyAccount = myAccount;
-    gaddrofname = addrofname;
+    sockfd = tsockfd;
+    myAccount = tmyAccount;
+    addrofname = taddrofname;
+    parent = tparent;
     //gaddrofpicture = addrofpicture;
     //gsignature = signature;
 
@@ -30,6 +32,7 @@ TalkBox::TalkBox(int sockfd, QString myAccount, QString addrofname,QWidget *pare
     ui->setupUi(this);
     connect(ui->pushButton,SIGNAL(clicked()),this,SLOT(on_sendButton_clicked()));
     connect(ui->pushButton,SIGNAL(clicked()),this,SLOT(on_pushButton_clicked()));
+    connect(parent,SIGNAL(receiveChatMsg(char*,char*,char*,char*)),this,SLOT(receive_message(char*,char*,char*,char*)));
 
 //    QString phoAdd;
 //    phoAdd.append(":/QQ/");
@@ -129,11 +132,11 @@ void TalkBox::on_sendButton_clicked()
         //首先把lineEdit内容发送给服务器
         QString message = ui->textEdit->toPlainText();
         QByteArray tmp1;
-        tmp1 = gmyAccount.toLatin1();
+        tmp1 = myAccount.toLatin1();
         msg.uName = tmp1.data();
 
         QByteArray tmp2;
-        tmp2 = gaddrofname.toLatin1();
+        tmp2 = addrofname.toLatin1();
         msg.fName = tmp2.data();
 
         QByteArray tmp3;
@@ -159,7 +162,7 @@ void TalkBox::on_sendButton_clicked()
         strcat(msgBox, msg.sendDate);
         strcat(msgBox, "|");
         strcat(msgBox, msg.sendMessage);
-        send(gSockfd, &msgBox, sizeof(msgBox), 0);
+        send(sockfd, &msgBox, sizeof(msgBox), 0);
 
 
 
@@ -172,3 +175,25 @@ void TalkBox::on_sendButton_clicked()
         scrollbar->setSliderPosition(scrollbar->maximum());
         return;
 }
+
+void TalkBox::receive_message(char *uName, char *fName, char *sendDate, char *sendMessage){
+
+    qDebug()<<"uName "<<uName<<endl;
+    qDebug()<<"fName "<<fName<<endl;
+    qDebug()<<"Date "<<sendDate<<endl;
+    qDebug()<<"Message "<<sendMessage<<endl;
+    char nameAndDate[30]={0};
+    strcat(nameAndDate,uName);
+    strcat(nameAndDate," ");
+    strcat(nameAndDate,sendDate);
+    strcat(nameAndDate,"\n");
+    strcat(sendMessage,"\n");
+
+//    qDebug()<<nameAndDate;
+//    qDebug()<<sendMessage;
+    ui->textEdit->append(QString(QLatin1String(nameAndDate)));
+    ui->textEdit->append(QString(QLatin1String(sendMessage)));
+    ui->textEdit->verticalScrollBar()->setSliderPosition(ui->textEdit->verticalScrollBar()->maximum());
+}
+
+

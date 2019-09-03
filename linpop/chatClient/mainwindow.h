@@ -14,6 +14,7 @@
 #include "QTime"
 #include "recvthread.h"
 #include <map>
+
 namespace Ui {
 class MainWindow;
 }
@@ -34,8 +35,7 @@ class MainWindow: public QMainWindow
 public:
 //    TalkBox* myTalkBox[100] = {nullptr};
     explicit MainWindow(int sockfd, char *my_id, QWidget *parent = 0);
-    map<QString,TalkBox*> mp;
-
+    map<QString,TalkBox*> *mp;
     ~MainWindow();
 
 private:
@@ -65,6 +65,7 @@ private slots:
 
 signals:
     void close_signal();
+    void receiveChatMsg(char *uName,char *fName,char *snedDate,char *sendMessage);
 };
 
 

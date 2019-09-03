@@ -31,9 +31,9 @@ HEADERS  += \
     mainwindow.h \
     mulitemdelegate.h \
     mulistitemdata.h \
-    talkbox.h \
     cnctthread.h \
-    recvthread.h
+    recvthread.h \
+    talkbox.h
 
 FORMS    += interface.ui \
     login.ui \

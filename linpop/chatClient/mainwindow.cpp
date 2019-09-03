@@ -23,6 +23,7 @@
 #include "QPicture"
 QStandardItemModel *pModel = new QStandardItemModel();
 
+
 struct TalkerInfo{
     char talkerPhotoAddr[2];
     char talkeSig[50];
@@ -256,6 +257,20 @@ void MainWindow::setListView(){
 void MainWindow::showMyTalkBox(int sockfd, QString myAccount, QString talkTo){
     //QStringList note = {0};
     //int x = ui->friendListWidget->currentRow();
+
+    map<QString,TalkBox*>::iterator iter;
+    iter = mp->find(talkTo);
+    //iter = mp.find(talkTo);
+    if(iter==mp.end()){
+         TalkBox *talkbox =  new TalkBox(sockfd,myAccount,talkTo,this);
+         mp.insert(pair<QString,TalkBox*>(talkTo,talkbox));
+         talkbox->show();
+    }
+    else{
+        iter->second->show();
+        iter->second->activateWindow();
+    }
+
     for(int i = 0; i < ui->blockListWidget->count(); i++){
         QListWidgetItem *item = ui->blockListWidget->itemAt(0, i);
         QWidget *bwid = ui->blockListWidget->itemWidget(item);
@@ -283,8 +298,8 @@ void MainWindow::showMyTalkBox(int sockfd, QString myAccount, QString talkTo){
             break;
         }
     }
-    TalkBox *talkbox =  new TalkBox(sockfd,myAccount , talkTo);
-    talkbox->show();
+//    TalkBox *talkbox =  new TalkBox(sockfd,myAccount , talkTo);
+//    talkbox->show();
 }
 
 
@@ -505,7 +520,9 @@ void MainWindow::on_refreshButton_clicked()
 }
 
 void MainWindow::receive7(char *message){
+
     qDebug()<<"receive7 "<<message<<endl;
+    message+=2;
     char *uName;
     char *fName;
     char *sendDate;
@@ -518,30 +535,43 @@ void MainWindow::receive7(char *message){
     sendMessage = strtok(nullptr,dep);
 
 
-    for(int i = 0; i < ui->blockListWidget->count(); i++){
-        QListWidgetItem *item = ui->blockListWidget->itemAt(0, i);
-        QWidget *bwid = ui->blockListWidget->itemWidget(item);
-        QLabel *label = bwid->findChild<QLabel *>("nameLabel");
-        QString a = QString(QLatin1String(uName));
-        qDebug()<< label->text() <<endl;
-        qDebug()<< a<<endl;
-        if(label->text().compare(a)){
-            label->setStyleSheet("color:red;");
-            break;
+    map<QString,TalkBox*>::iterator iter;
+    iter = mp.find(uName);
+
+    if(iter==mp.end()){
+        qDebug()<<"unfind"<<endl;
+        for(int i = 0; i < ui->blockListWidget->count(); i++){
+            QListWidgetItem *item = ui->blockListWidget->itemAt(0, i);
+            QWidget *bwid = ui->blockListWidget->itemWidget(item);
+            QLabel *label = bwid->findChild<QLabel *>("nameLabel");
+            QString a = QString(QLatin1String(uName));
+            qDebug()<< label->text() <<endl;
+            qDebug()<< a<<endl;
+            if(label->text().compare(a)){
+                label->setStyleSheet("color:red;");
+                break;
+            }
+        }
+        for(int i = 0; i < ui->friendListWidget->count(); i++){
+            QListWidgetItem *item = ui->friendListWidget->itemAt(0, i);
+            QWidget *fwid = ui->friendListWidget->itemWidget(item);
+            QLabel *flabel = fwid->findChild<QLabel *>("nameLabel");
+            QString a;
+            a = QString(QLatin1String(uName));
+            qDebug()<< flabel->text() <<endl;
+            qDebug()<< a<<endl;
+            if(flabel->text().compare(a)){
+                flabel->setStyleSheet("color:red;");
+                break;
+            }
         }
     }
-    for(int i = 0; i < ui->friendListWidget->count(); i++){
-        QListWidgetItem *item = ui->friendListWidget->itemAt(0, i);
-        QWidget *fwid = ui->friendListWidget->itemWidget(item);
-        QLabel *flabel = fwid->findChild<QLabel *>("nameLabel");
-        QString a;
-        a = QString(QLatin1String(uName));
-        qDebug()<< flabel->text() <<endl;
-        qDebug()<< a<<endl;
-        if(flabel->text().compare(a)){
-            flabel->setStyleSheet("color:red;");
-            break;
-        }
+    else{
+        qDebug()<<"finded"<<endl;
+        iter->second->show();
+        iter->second->activateWindow();
+        qDebug()<<"receiveChatMsg"<<endl;
+        emit receiveChatMsg(uName,fName,sendDate,sendMessage);
     }
 
 }

@@ -20,10 +20,8 @@ public:
     static void* run(void* arg);
 signals:
 
-    void sendMsg_signal_0();
-    void sendMsg_signal_1();
-    void sendMsg_signal_2();
-    void internetdisconnect_signal();
+    void timeout_signal();
+    void sendMsg_signal(char  message);
 private:
     int sockfd;
     pthread_t thread;

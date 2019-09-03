@@ -2,6 +2,7 @@
 #include "ui_register.h"
 #include "QMessageBox"
 #include "recvmsgthread.h"
+#include "cnctthread.h"
 
 Register::Register(int sockfd, QWidget *parent) :
    sockfd(sockfd),QDialog(parent),
@@ -18,16 +19,13 @@ Register::~Register()
 
 void Register::commitTo()
 {
-    char serverIp[20] = "10.194.43.253";
-    int serverPort = 8888;
-    char localIp[20];
-    char registInfo[50] = {0};
 
     ui->label_new_account->clear();
 
     registerInfo rf;
-    char registInfoSendToServer[50] = {0};
+
     memset(&rf,0,sizeof(rf));
+    memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
     if(ui->lineEdit_name->text()==""||ui->lineEdit_pwd->text()==""){
         ui->label_new_account->setText(QString("account or password wasn't been filt"));
         qDebug() << "account or password wasn't been filt" << endl;
@@ -43,6 +41,7 @@ void Register::commitTo()
 
     if(strcmp(rf.pwd,cfmpwd)){
         ui->label_new_account->setText(QString("passwords don't match!"));
+        memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
         return;
     }
 
@@ -55,84 +54,76 @@ void Register::commitTo()
     if(!strcmp(rf.name,""))
     {
         ui->label_new_account->setText(QString("username is empty, please fill in username"));
+        memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
         return;
     }
     else if(!strcmp(rf.pwd,"")||!strcmp(cfmpwd,""))
     {
         ui->label_new_account->setText(QString("please set password"));
+        memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
         return;
     }
 
     ui->btn_commit->setText("registering...");
 
+    cnctThread *cthread = new cnctThread(this);
+    cthread->start();
 
-    int rgfd = cs.connectTo(serverIp,serverPort);
+    connect(cthread,SIGNAL(finished(int)),this,SLOT(startrecv(int )));
 
-    if(rgfd == -1){
-        qDebug()<<"register connect error!"<<endl;
-            ui->btn_commit->setText("register");
-        return;
-    }
 
-    send(rgfd,&registInfoSendToServer,sizeof(registInfoSendToServer),0);
-
-    recvMsgThread *rthread = new recvMsgThread(rgfd,this);
-    rthread->start();
-
-    connect(rthread,SIGNAL(sendMsg_signal_0()),this,SLOT(msg_received_0()));
-    connect(rthread,SIGNAL(sendMsg_signal_1()),this,SLOT(msg_received_1()));
-    connect(rthread,SIGNAL(sendMsg_signal_2()),this,SLOT(msg_received_2()));
-    connect(rthread,SIGNAL(internetdisconnect_signal()),this,SLOT(internetdisconnected_received()));
 
 
 }
 
-void Register::msg_received_0(){
-    ui->btn_commit->setText("register");
-    QMessageBox msg(this);//对话框设置父组件
-    msg.setWindowTitle("error");//对话框标题
-    msg.setText("UNKNOW ERROR!");//对话框提示文本
-    msg.setIcon(QMessageBox::Critical);//设置图标类型
-    msg.setStandardButtons(QMessageBox::Cancel);//对话框上包含的按钮
 
-    if(msg.exec() == QMessageBox::Cancel)//模态调用
-    {
-       qDebug() << "unknown error";//数据处理
-       return;
+
+void Register::msg_received(char *message){
+    ui->btn_commit->setText("commit");
+    if(!strcmp(message,"1")){
+        QMessageBox msg(this);//对话框设置父组件
+        msg.setWindowTitle("registed successfully");//对话框标题
+        msg.setText("you can go to login now!");//对话框提示文本
+        msg.setIcon(QMessageBox::Information);//设置图标类型
+        msg.setStandardButtons(QMessageBox::Ok);//对话框上包含的按钮
+
+        if(msg.exec() == QMessageBox::Ok)//模态调用
+        {
+            qDebug() << "regist succeeded";//数据处理
+            this->close();
+        }
+    }
+    else if(!strcmp(message,"2")){
+        QMessageBox msg(this);//对话框设置父组件
+        msg.setWindowTitle("register failed");//对话框标题
+        msg.setText("this username has been registered");//对话框提示文本
+        msg.setIcon(QMessageBox::Information);//设置图标类型
+        msg.setStandardButtons(QMessageBox::Ok);//对话框上包含的按钮
+
+        if(msg.exec() == QMessageBox::Ok)//模态调用
+        {
+           qDebug() << "regist failed";//数据处理
+           memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
+           return;
+        }
+    }
+    else if(!strcmp(message,"0")){
+        QMessageBox msg(this);//对话框设置父组件
+        msg.setWindowTitle("error");//对话框标题
+        msg.setText("UNKNOW ERROR!");//对话框提示文本
+        msg.setIcon(QMessageBox::Critical);//设置图标类型
+        msg.setStandardButtons(QMessageBox::Cancel);//对话框上包含的按钮
+
+        if(msg.exec() == QMessageBox::Cancel)//模态调用
+        {
+           qDebug() << "unknown error";//数据处理
+           memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
+           return;
+        }
     }
 }
 
-void Register::msg_received_1(){
-    ui->btn_commit->setText("register");
-    QMessageBox msg(this);//对话框设置父组件
-    msg.setWindowTitle("registed successfully");//对话框标题
-    msg.setText("you can go to login now!");//对话框提示文本
-    msg.setIcon(QMessageBox::Information);//设置图标类型
-    msg.setStandardButtons(QMessageBox::Ok);//对话框上包含的按钮
-
-    if(msg.exec() == QMessageBox::Ok)//模态调用
-    {
-        qDebug() << "regist succeeded";//数据处理
-        this->close();
-    }
-}
-
-void Register::msg_received_2(){
-    ui->btn_commit->setText("register");
-    QMessageBox msg(this);//对话框设置父组件
-    msg.setWindowTitle("register failed");//对话框标题
-    msg.setText("this username has been registered");//对话框提示文本
-    msg.setIcon(QMessageBox::Information);//设置图标类型
-    msg.setStandardButtons(QMessageBox::Ok);//对话框上包含的按钮
-
-    if(msg.exec() == QMessageBox::Ok)//模态调用
-    {
-       qDebug() << "regist failed";//数据处理
-       return;
-    }
-}
-
-void Register::internetdisconnected_received(){
+void Register::timeout_received(){
     ui->btn_commit->setText("register");
     QMessageBox msg(this);//对话框设置父组件
     msg.setWindowTitle("error");//对话框标题
@@ -143,8 +134,38 @@ void Register::internetdisconnected_received(){
     if(msg.exec() == QMessageBox::Ok)//模态调用
     {
        qDebug() << "internet disconnected";//数据处理
+       memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
        return;
     }
+}
+
+void Register::startrecv(int t_sockfd){
+    if(t_sockfd==-1){
+        ui->btn_commit->setText("commit");
+        QMessageBox msg(this);//对话框设置父组件
+        msg.setWindowTitle("error");//对话框标题
+        msg.setText("cannot connect to server.");//对话框提示文本
+        msg.setIcon(QMessageBox::Critical);//设置图标类型
+        msg.setStandardButtons(QMessageBox::Ok);//对话框上包含的按钮
+
+        if(msg.exec() == QMessageBox::Ok)//模态调用
+        {
+           qDebug() << "cannot connect to server";//数据处理
+           memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
+           return;
+        }
+    }
+    sockfd = t_sockfd;
+
+    send(sockfd,&registInfoSendToServer,sizeof(registInfoSendToServer),0);
+
+    recvMsgThread *rthread = new recvMsgThread(sockfd,this);
+    rthread->start();
+
+    connect(rthread,SIGNAL(sendMsg_signal(char *)),this,SLOT(msg_received(char *)));
+
+    connect(rthread,SIGNAL(timeout_signal()),this,SLOT(timeout_received()));
+
 }
 
 

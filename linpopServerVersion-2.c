@@ -11,7 +11,7 @@
 //server information
 int clientfd[1024] = {0};
 char accountClientfd[1024][20] = {0};
-char serverIp[20] = "10.194.43.253";
+char serverIp[20] = "10.194.46.38";
 int serverPort = 8888;
 
 //functtions
@@ -25,31 +25,21 @@ int dragTalkerInfo(char *buf, int confd);
 int addFriend(char *buf, int confd);
 int sendMsg(char *buf, int confd);
 
-struct Msg{
-	char  uName[20];
-	char fName[20];
-	char sendDate[30];
-	char sendMessage[200];
-};
+// struct Msg{
+// 	char  uName[20];
+// 	char fName[20];
+// 	char sendDate[30];
+// 	char sendMessage[200];
+// };
 
 struct TalkerInfo{
     char talkerPhotoAddr[2];
     char talkeSig[50];
 };
 
-struct List{
-	char account[20];
-	char phaddr[2];
-	char state[2] ;
-	char group[2];
-};
 
-struct Information{
-	char account[20];
-	char phaddr[2];
-	char autograph[30];
-	char state[2];
-};
+
+
 
 //main program
 int main(){
@@ -99,7 +89,7 @@ int main(){
 		i++;
 
 		//printf("newclient connected: ip=%s\t,port=%d\n",inet_ntoa(cliaddr.sin_addr),ntohs(cliaddr.sin_port));
-
+		printf("my confd, %d", confd);
 		pthread_create(&tid,NULL,handClient,&clientfd[i-1]);
 	}
     return 1;
@@ -330,22 +320,7 @@ int dragList(char *buf, int confd){
 	}
 
     //start quering
-	if(mysql_query(&mysql,sqlStr) != 0)
-	{
-		printf("%s\n",mysql_error(&mysql));
-		//release your command
-		 result = mysql_store_result(&mysql);
-		if (result)
-		{
-			mysql_free_result(result);
-			while (!mysql_next_result(&mysql))
-			{
-				result = mysql_store_result(&mysql);
-				mysql_free_result(result);
-			}
-		}
-		return -1;
-	}
+	mysql_query(&mysql,sqlStr);
     
 	result = mysql_store_result(&mysql);
 	if(result == NULL)
@@ -357,54 +332,50 @@ int dragList(char *buf, int confd){
 	}
     //读取结果，返回结果集中的一行，数组，字符串数组
 	//一共有4组数据，所以一共有4个ifelse语句
-	printf("hello2\n");
 
 
-	struct List list;
+	for(long long i = 0; i < 100000000; i++){
+				;
+			}
+	char bag[40];
 	while(1){
 		if(row = mysql_fetch_row(result))
 		{
 			
-			memset(list.account, 0,sizeof(list.account));
-			memset(list.phaddr, 0,sizeof(list.phaddr));
-			memset(list.group, 0,sizeof(list.group));
-			memset(list.state, 0,sizeof(list.state));
-			printf("%s %s %s %s\n", list.account, list.phaddr, list.state, list.group);
+			memset(bag, 0, sizeof(bag));
+			strcat(bag, "2|");
+			strcat(bag, row[0]);
+			strcat(bag, "|");
+			strcat(bag, row[1]); 
+			strcat(bag, "|");
+			strcat(bag, row[2]); 
+			strcat(bag, "|");
+			strcat(bag, row[3]);
+			send(confd, bag, sizeof(bag), 0);
+			for(long long i = 0; i < 100000000; i++){
+				;
+			}
 			
-			strcpy(list.account, row[0]);
-			strcpy(list.phaddr, row[1]); 
-			strcpy(list.state, row[2]); 
-			strcpy(list.group, row[3]);
 
-			send(confd, &list, sizeof(list), 0);
-			printf("%s %s %s %s\n", list.account, list.phaddr, list.state, list.group);
 		}else{
 			printf("读取行数据失败\n");
 			break;
 		}
 	}
 	printf("hello3");
-	memset(list.account, 0,sizeof(list.account));
-	memset(list.phaddr, 0,sizeof(list.phaddr));
-	memset(list.group, 0,sizeof(list.group));
-	memset(list.state, 0,sizeof(list.state));
-
+	memset(bag, 0,sizeof(bag));
 	
-	
-	send(confd,&list, sizeof(list), 0);
-	
-	
-    //release your command
-		 result = mysql_store_result(&mysql);
-		if (result)
+	send(confd, "x", sizeof("x"), 0);
+	result = mysql_store_result(&mysql);
+	if (result)
+	{
+		mysql_free_result(result);
+		while (!mysql_next_result(&mysql))
 		{
+			result = mysql_store_result(&mysql);
 			mysql_free_result(result);
-			while (!mysql_next_result(&mysql))
-			{
-				result = mysql_store_result(&mysql);
-				mysql_free_result(result);
-			}
 		}
+	}
     return 1;
 }
 
@@ -460,28 +431,23 @@ int dragInformation(char *buf, int confd){
 	//printf("hello2\n");
 
 
-	struct Information myInformation;
+	char myInformation[60];
 	while(1){
 		if(row = mysql_fetch_row(result)){
-			memset(myInformation.account, 0, sizeof(myInformation.account));
-			memset(myInformation.phaddr, 0, sizeof(myInformation.phaddr));
-			memset(myInformation.autograph, 0, sizeof(myInformation.autograph));
-			memset(myInformation.state, 0, sizeof(myInformation.state));
 
-			printf("%s %s %s %s\n",myInformation.account, myInformation.phaddr, myInformation.autograph, myInformation.state);
-
-			strcpy(myInformation.account, row[0]);
-			strcpy(myInformation.phaddr, row[1]); 
-			strcpy(myInformation.autograph, row[2]); 
-			strcpy(myInformation.state, row[3]);
-
-			strcpy(myInformation.account, row[0]);
-			strcpy(myInformation.phaddr, row[1]); 
-			strcpy(myInformation.autograph, row[2]); 
-			strcpy(myInformation.state, row[3]);
-
-			send(confd, &myInformation, sizeof(myInformation), 0);
-			printf("%s %s %s %s\n",myInformation.account, myInformation.phaddr, myInformation.autograph, myInformation.state);
+			memset(myInformation, 0, sizeof(myInformation));
+			strcat(myInformation, "3|");
+			strcat(myInformation, row[0]);
+			strcat(myInformation, "|");
+			strcat(myInformation, row[1]); 
+			strcat(myInformation, "|");
+			strcat(myInformation, row[2]); 
+			strcat(myInformation, "|");
+			strcat(myInformation, row[3]);
+			
+			send(confd, myInformation, sizeof(myInformation), 0);
+			
+			printf("%s\n",myInformation);
 		}else{
 			printf("读取行数据失败\n");
 			break;
@@ -489,11 +455,7 @@ int dragInformation(char *buf, int confd){
 		
 	}
 
-	memset(myInformation.account, 0,sizeof(myInformation.account));
-	memset(myInformation.phaddr, 0,sizeof(myInformation.phaddr));
-	memset(myInformation.autograph, 0,sizeof(myInformation.autograph));
-	memset(myInformation.state, 0,sizeof(myInformation.state));
-	send(confd,&myInformation, sizeof(myInformation), 0);
+	memset(myInformation, 0,sizeof(myInformation));
 	
     //release your command
 		 result = mysql_store_result(&mysql);
@@ -550,6 +512,7 @@ int dragInformation(char *buf, int confd){
 				mysql_free_result(result);
 			}
 		}
+		
     return 1;
 }
 
@@ -723,7 +686,7 @@ int addFriend(char *buf, int confd)
 	if(row = mysql_fetch_row(result)){
 		//return 1
 		send(confd, "1", strlen("1"), 0);
-		return 1;
+		
 	}else{
 		//not in my list
 		if (result)
@@ -743,7 +706,7 @@ int addFriend(char *buf, int confd)
 		if(row = mysql_fetch_row(result)){
 			//return 0
 			send(confd, "0", strlen("0"), 0);
-			return 1;
+			
 		}
 		else{
 			//im not blocked
@@ -782,10 +745,10 @@ int addFriend(char *buf, int confd)
 						sprintf(sqlStr,"%s'%s','%s','1');", "insert into relation values(", fName, uName );
 						printf("%s\n", sqlStr);
 						mysql_query(&mysql,sqlStr);
-						return 1;
+						
 					}else{
 						send(confd, "3", strlen("3"), 0);
-						return 1;
+						
 					}
 				}else{
 					printf("搜索结果为空，怎么可能？");
@@ -795,7 +758,7 @@ int addFriend(char *buf, int confd)
 			}else{
 				//return 4;
 				send(confd, "4", strlen("4"), 0);
-				return 1;
+				
 			}
 		}
 	}
@@ -809,15 +772,16 @@ int sendMsg(char *buf, int confd){
 	MYSQL_RES *result;//结果集指针
 	MYSQL_ROW  row;//行结果
 	
-	struct Msg msg;
-	memset(msg.uName, 0,sizeof(msg.uName));
-	memset(msg.fName, 0,sizeof(msg.fName));
-	memset(msg.sendDate, 0,sizeof(msg.sendDate));
-	memset(msg.sendMessage, 0,sizeof(msg.sendMessage));
+	char uName[20] = {0};
+	char fName[20] = {0};
+	char sendDate[30] = {0};
+	char sendMessage[200] = {0};
+
+
 	
 	char sqlStr[1024]={0};
-	sscanf(buf+2,"%[^|]|%[^|]|%[^|]|%[^|]",msg.uName, msg.fName, msg.sendDate, msg.sendMessage);
-	sprintf(sqlStr,"%s'%s','%s','%s','%s');", "insert into record values( ", msg.uName, msg.fName, msg.sendDate, msg.sendMessage);
+	sscanf(buf+2,"%[^|]|%[^|]|%[^|]|%[^|]",uName, fName, sendDate, sendMessage);
+	sprintf(sqlStr,"%s'%s','%s','%s','%s');", "insert into record values( ", uName, fName, sendDate, sendMessage);
 	printf("%s\n", sqlStr);
 	mysql_init(&mysql);
 	mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0);
@@ -841,12 +805,13 @@ int sendMsg(char *buf, int confd){
 				int fConfd;
 				int flag = 0;
 				for(int i = 0; i < 1024; i++){
-					if(strcmp(accountClientfd[i], msg.fName) == 0){
+					if(strcmp(accountClientfd[i], fName) == 0){
 						//找到了fconfd
+						
+						fConfd = clientfd[i];
 						printf("find friendConfd\n");
 						printf("friend confd : %d\n",fConfd);
 						printf("friend name: %s\n", accountClientfd[i]);
-						fConfd = clientfd[i];
 						flag = 1;
 						break;
 					}
@@ -879,7 +844,7 @@ int sendMsg(char *buf, int confd){
                         }
                     }
 				memset(sqlStr, 0, sizeof(sqlStr));
-				sprintf(sqlStr,"%s'%s';", "select state from information where account = ",msg.fName);
+				sprintf(sqlStr,"%s'%s';", "select state from information where account = ",fName);
 				printf("%s\n", sqlStr);
 
 
@@ -900,22 +865,47 @@ int sendMsg(char *buf, int confd){
 						return 1;
 					}else if(strcmp(row[0], "1") == 0){
 						//对方在线
-						printf("!!!!!!!!!!!!!!!!!!!!!!!%s %s %s %s\n",msg.uName, msg.fName, msg.sendDate, msg.sendMessage);
-						send(fConfd, &msg, sizeof(msg), 0);
-						return 1;
+						printf("!!!!!!!!!!!!!!!!!!!!!!!%s %s %s %s\n",uName, fName, sendDate, sendMessage);
+
+
+						char bag1[300];
+						memset(bag1, 0, sizeof(bag1));
+						strcat(bag1,"7|");
+						strcat(bag1, uName);
+						strcat(bag1, "|");
+						strcat(bag1, fName);
+						strcat(bag1, "|");
+						strcat(bag1, sendDate);
+						strcat(bag1, "|");
+						strcat(bag1, sendMessage);
+
+						send(fConfd, bag1, strlen(bag1), 0);
+						printf("bag1: %s\n", bag1);
+						
+						//return 1;
 					}else{
 						printf("其他结果，不在也在？？？no way\n");
-						return 1;
+						//return 1;
 					}
 				}else{
 					printf("error, 怎么可能查无此人？？？\n");
-					return 1;
+					//return 1;
 				}
 
 
 
 				//memset all information
 				//release your command
+				//release your command
+                result = mysql_store_result(&mysql);
+                if (result){
+                        mysql_free_result(result);
+                        while (!mysql_next_result(&mysql))
+                        {
+                            result = mysql_store_result(&mysql);
+                            mysql_free_result(result);
+                        }
+                    }
             }
 
 }

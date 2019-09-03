@@ -19,7 +19,9 @@ SOURCES += main.cpp\
     recvmsgthread.cpp \
     mainwindow.cpp \
     mulitemdelegate.cpp \
-    talkbox.cpp
+    talkbox.cpp \
+    cnctthread.cpp \
+    recvthread.cpp
 
 HEADERS  += \
     login.h \
@@ -29,7 +31,9 @@ HEADERS  += \
     mainwindow.h \
     mulitemdelegate.h \
     mulistitemdata.h \
-    talkbox.h
+    talkbox.h \
+    cnctthread.h \
+    recvthread.h
 
 FORMS    += interface.ui \
     login.ui \

@@ -14,16 +14,16 @@ QStringList grecord;
 
 void* recvThread(void *args);
 
-TalkBox::TalkBox(int sockfd, QString myAccount, QString addrofname, QString addrofpicture,QString signature,QStringList record,QWidget *parent) :
+TalkBox::TalkBox(int sockfd, QString myAccount, QString addrofname,QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::TalkBox)
 {
     gSockfd = sockfd;
     gmyAccount = myAccount;
     gaddrofname = addrofname;
-    gaddrofpicture = addrofpicture;
-    gsignature = signature;
-    grecord = record;
+    //gaddrofpicture = addrofpicture;
+    //gsignature = signature;
+
 
     //设置聊天窗口的各种讯息
     setGeometry(600,100,266,675);
@@ -31,32 +31,32 @@ TalkBox::TalkBox(int sockfd, QString myAccount, QString addrofname, QString addr
     connect(ui->pushButton,SIGNAL(clicked()),this,SLOT(on_sendButton_clicked()));
     connect(ui->pushButton,SIGNAL(clicked()),this,SLOT(on_pushButton_clicked()));
 
-    QString phoAdd;
-    phoAdd.append(":/QQ/");
-    phoAdd.append(addrofpicture);
-    phoAdd.append(".jpg");
-    QPixmap p;
-    p.load(phoAdd);
-    ui->talkerpicture->setPixmap(p);
-    ui->talkerpicture->setScaledContents(true);
+//    QString phoAdd;
+//    phoAdd.append(":/QQ/");
+//    phoAdd.append(addrofpicture);
+//    phoAdd.append(".jpg");
+//    QPixmap p;
+//    p.load(phoAdd);
+//    ui->talkerpicture->setPixmap(p);
+//    ui->talkerpicture->setScaledContents(true);
     ui->talkername->setText(addrofname);
-    ui->talkersignature->setText(signature);
+//    ui->talkersignature->setText(signature);
 
     //TODO::设置抓取往常的聊天记录
-    talkboxrecord=record;
-    recordno=talkboxrecord.count()-1;
-    ui->textEdit->clear();
+//    talkboxrecord=record;
+//    recordno=talkboxrecord.count()-1;
+//    ui->textEdit->clear();
 
 
     //TODO::每次打开这个要先从服务器抓取十条原来的记录
 
-    int ret;
+//    int ret;
     //TODO::开始新线程recv;
-    pthread_t thread;
-    ret = pthread_create(&thread, NULL, recvThread, NULL);
-    if(0 != ret){
-        qDebug()<<"create thread is fail"<<endl;
-    }
+//    pthread_t thread;
+//    ret = pthread_create(&thread, NULL, recvThread, NULL);
+//    if(0 != ret){
+//        qDebug()<<"create thread is fail"<<endl;
+//    }
 
 
 
@@ -145,6 +145,8 @@ void TalkBox::on_sendButton_clicked()
         tmp4 = text.toLatin1();
         msg.sendDate = tmp4.data();
         tmp4.clear();
+
+
 
         //qDebug()<<msg.uName<<msg.fName<<msg.sendDate<<msg.sendMessage<<endl;
         char msgBox[300];

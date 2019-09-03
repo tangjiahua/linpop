@@ -19,7 +19,7 @@ class TalkBox : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit TalkBox(int sockfd, QString myAccount, QString addrofname, QString addrofpicture,QString signature,QStringList record,QWidget *parent = 0);
+    explicit TalkBox(int sockfd, QString myAccount, QString addrofname, QWidget *parent = 0);
     ~TalkBox();
     QStringList talkboxrecord;
     int recordno;

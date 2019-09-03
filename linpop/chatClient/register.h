@@ -28,15 +28,13 @@ private:
     Ui::Register *ui;
     int sockfd;
     connectServer cs;
+    char registInfoSendToServer[50] = {0};
 
 private slots:
     void commitTo();
-    void msg_received_0();
-
-    void msg_received_1();
-    void msg_received_2();
-
-    void internetdisconnected_received();
+    void msg_received(char *message);
+    void startrecv(int sockfd);
+    void timeout_received();
 };
 
 #endif // REGISTER_H

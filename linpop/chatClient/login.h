@@ -33,13 +33,13 @@ private:
     int sockfd;
     connectServer cs;
     loginInfo lf;
+    char loginInfoSendToServer[40] = {0};
 private slots:
     void loginTo();
     void registerTo();
-    void msg_received_0();
-    void msg_received_1();
-    void msg_received_2();
-    void internetdisconnected_received();
+    void msg_received(char  message);
+    void startrecv(int sockfd);
+    void timeout_received();
 };
 
 #endif // LOGIN_H

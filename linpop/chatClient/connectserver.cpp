@@ -17,6 +17,7 @@ int connectServer::connectTo(string ip_addr, short port)
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(ip_addr.c_str());
 
+    qDebug()<<"start socket"<<endl;
     //Socket()
     int sockfd = socket(AF_INET,SOCK_STREAM,0);
     if(-1 == sockfd)
@@ -25,8 +26,12 @@ int connectServer::connectTo(string ip_addr, short port)
         return -1;
     }
 
+    qDebug()<<"start connect"<<endl;
+
     //Connect
     int res = connect(sockfd,(struct sockaddr*)&addr,sizeof(addr));
+
+    qDebug()<<"res = "<<res<<endl;
     if(-1 == res)
     {
         qDebug() << "connect error\n" << endl;

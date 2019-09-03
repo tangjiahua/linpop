@@ -19,7 +19,8 @@
 #include "connectserver.h"
 #include "QWidget"
 #include <QApplication>
-
+#include "recvthread.h"
+#include "QPicture"
 QStandardItemModel *pModel = new QStandardItemModel();
 
 struct TalkerInfo{
@@ -27,33 +28,22 @@ struct TalkerInfo{
     char talkeSig[50];
 };
 
-struct List{
-    char account[20];
-    char phaddr[2];
-    char state[2] ;
-    char group[2];
-};
 
-struct Information{
-    char account[20];
-    char phaddr[2];
-    char autograph[30];
-    char state[2];
-};
-char tmpInformattion[2];
+
+//char tmpInformattion[2];
 
 
 
 
-QStringList friendName;
-QStringList photoAddress;
-QStringList state;
-QStringList group;
+QStringList friendNameList;
+QStringList photoAddressList;
+QStringList stateList;
+QStringList groupList;
 
-char friendNameCurrent[20] = {0};
-char photoAddressCurrent[2] = {0};
-char stateCurrent[2] = {0};
-char groupCurrent[2] = {0};
+//char friendNameCurrent[20] = {0};
+//char photoAddressCurrent[2] = {0};
+//char stateCurrent[2] = {0};
+//char groupCurrent[2] = {0};
 
 
 
@@ -73,54 +63,37 @@ MainWindow::MainWindow(int sockfd, char *my_id , QWidget *parent) :
 //    QString current_date =current_date_time.toString("yyyy-MM-dd hh:mm:ss");
 //    qDebug()<<current_date<<endl;
 
+    rthread = new recvThread(sockfd,this);
+    rthread->start();
+
+
     dragMyInformation();
-    dragListFromServer();
-    setListView();
+//    dragListFromServer();
+
+
+
+    connect(rthread,SIGNAL(signal3(char * )),this,SLOT(receive3(char * )));
+    connect(rthread,SIGNAL(signal2(char*)),this,SLOT(receive2(char*)));
+    connect(rthread,SIGNAL(signal7(char*)),this,SLOT(receive7(char*)));
+
+    connect(ui->friendListWidget,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(singleclicked(QListWidgetItem*)));
+    connect(ui->blockListWidget,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(singleclicked(QListWidgetItem*)));
+//    sleep(5);
+//        setListView();
 }
 
 void MainWindow::dragMyInformation(){
-    char dragMyInformationByName[40] = {0};
+
     strcat(dragMyInformationByName, "3");
     strcat(dragMyInformationByName, "|");
     strcat(dragMyInformationByName, my_id);
     ssize_t size = send(sockfd, (void*)&dragMyInformationByName, sizeof(dragMyInformationByName),0);
+    qDebug()<<"send dragMyInformationByName = "<<dragMyInformationByName<<endl;
     if(size == -1){
         qDebug()<< "send message error" << endl;
         return;
     }
-    struct Information myInformation;
 
-
-    while(size = recv(sockfd, &myInformation, sizeof(myInformation),0)){
-        if(size < 0){
-            qDebug()<< "send message error\n" << endl;
-            return;
-        }else if(size == 0){
-            printf("Connection closed\n");
-            return;
-        }else{
-            memset(tmpInformattion, 0,sizeof(tmpInformattion));
-            strcpy(tmpInformattion, myInformation.account);
-            if(tmpInformattion[0] == '\0'){
-                break;
-            }
-            QString address = ":/QQ/";
-            QString tmp;
-            //memset(tmp, 0, sizeof(tmp));
-            address.append(myInformation.phaddr);
-            address.append(tmp);
-            address.append(".jpg");
-            QPixmap userpixmap(address);
-            userpixmap.load(address);
-            ui->userpicture->setPixmap(userpixmap);
-            ui->userpicture->setScaledContents(true);
-
-            ui->username->setText(myInformation.account);
-            ui->usersignature->setText(myInformation.autograph);
-
-
-        }
-    }
 }
 
 
@@ -134,74 +107,47 @@ void MainWindow::dragListFromServer(){
     strcat(dragByName, my_id);
 
     ssize_t size = send(sockfd,(void*)&dragByName,sizeof(dragByName),0);
+       qDebug()<<"send dragByName = "<<dragByName<<endl;
     if(size == -1){
         qDebug()<< "send message error" << endl;
         return;
     }
-    struct List ReceiveBuffer;
-
-    while(size = recv(sockfd, &ReceiveBuffer, sizeof(ReceiveBuffer),0)){
-        if(size < 0){
-            qDebug()<< "send message error\n" << endl;
-            return;
-        }else if(size == 0){
-            printf("Connection closed\n");
-            return;
-        }else{
-                memset(friendNameCurrent, 0,sizeof(friendNameCurrent));
-                memset(photoAddressCurrent, 0,sizeof(photoAddressCurrent));
-                memset(groupCurrent, 0,sizeof(groupCurrent));
-                memset(stateCurrent, 0,sizeof(stateCurrent));
-
-                strcpy(friendNameCurrent, ReceiveBuffer.account);
-                strcpy(photoAddressCurrent, ReceiveBuffer.phaddr);
-                strcpy(groupCurrent, ReceiveBuffer.group);
-                strcpy(stateCurrent, ReceiveBuffer.state);
-                if(groupCurrent[0] == '\0'){
-                    break;
-                }
-                photoAddress << (photoAddressCurrent);
-                friendName.append(friendNameCurrent);
-                //photoAddress.append(photoAddressCurrent);
-                group.append(groupCurrent);
-                state.append(stateCurrent);
-
-
-        }
-    }
-
-
-
 }
 
 
 void MainWindow::setListView(){
+    ui->refreshButton->setText("refresh");
     QListWidgetItem *aItem; //每一行是一个QListWidgetItem
     ui->friendListWidget->clear(); //清除项
     ui->blockListWidget->clear();
 
-    int x = photoAddress.count();
+    int x = photoAddressList.count();
     for(int i=0; i<x; i++)
     {
-        if(group.at(i) == '1'){
+        if(groupList.at(i) == '1'){
             QWidget *widget = new QWidget(ui->friendListWidget);
             //创建自定义的item
             widget->setStyleSheet("background:transparent;");
             QLabel *TypeLabel = new QLabel(widget);
             QString address = ":/QQ/";
-            QString tmp = photoAddress.at(i);
+            QString tmp = photoAddressList.at(i);
             address.append(tmp);
             address.append(".jpg");
-            QPixmap myPix(address);
+
             TypeLabel->setFixedSize(62, 62);
-            TypeLabel->setPixmap(myPix);
+            QPixmap mypixmap;
+            mypixmap.load(address);
+
+
+
+            TypeLabel->setPixmap(mypixmap);
             TypeLabel->setScaledContents(true);
             TypeLabel->setStyleSheet("QLabel{padding-left:5px;padding-right:10px;padding-top:5px;padding-bottom:10px}");
             QWidget *frontArea = new QWidget(widget);
             frontArea->setFixedHeight(45);
             QLabel *TextLabel = new QLabel(frontArea);
 
-            TextLabel->setText(friendName.at(i));//设置好友名字
+            TextLabel->setText(friendNameList.at(i));//设置好友名字
             TextLabel->setObjectName(QStringLiteral("nameLabel"));
             TypeLabel->setObjectName(QStringLiteral("photoLabel"));
             QFont nameFont;
@@ -210,7 +156,7 @@ void MainWindow::setListView(){
             TextLabel->setFont(nameFont);
 
             QLabel *TotalCopyLabel = new QLabel(frontArea);
-            if(state.at(i) == '1'){
+            if(stateList.at(i) == '1'){
                 TotalCopyLabel->setText("Online");
             }else{
                 TotalCopyLabel->setText("Offline");
@@ -241,28 +187,39 @@ void MainWindow::setListView(){
             widget->setStyleSheet("background:transparent;");
             QLabel *TypeLabel = new QLabel(widget);
             QString address = ":/QQ/";
-            QString tmp = photoAddress.at(i);
+            QString tmp = photoAddressList.at(i);
             address.append(tmp);
             address.append(".jpg");
-            QPixmap myPix(address);
+//            QPixmap myPix(address);
+            //QPicture mypicture;
+            //mypicture.load(address);
+
+            QPixmap mypixmap;
+            mypixmap.load(address);
+
+
+
+            TypeLabel->setPixmap(mypixmap);
             TypeLabel->setFixedSize(62, 62);
-            TypeLabel->setPixmap(myPix);
+
             TypeLabel->setScaledContents(true);
             TypeLabel->setStyleSheet("QLabel{padding-left:5px;padding-right:10px;padding-top:5px;padding-bottom:10px}");
             QWidget *frontArea = new QWidget(widget);
             frontArea->setFixedHeight(45);
             QLabel *TextLabel = new QLabel(frontArea);
 
-            TextLabel->setText(friendName.at(i));//设置好友名字
+            TextLabel->setText(friendNameList.at(i));//设置好友名字
             TextLabel->setObjectName(QStringLiteral("nameLabel"));
             TypeLabel->setObjectName(QStringLiteral("photoLabel"));
+
+
             QFont nameFont;
             nameFont.setFamily("微软雅黑");
             nameFont.setPointSize(12);
             TextLabel->setFont(nameFont);
 
             QLabel *TotalCopyLabel = new QLabel(frontArea);
-            if(state.at(i) == '1'){
+            if(stateList.at(i) == '1'){
                 TotalCopyLabel->setText("Online");
             }else{
                 TotalCopyLabel->setText("Offline");
@@ -291,20 +248,42 @@ void MainWindow::setListView(){
             ui->blockListWidget->setItemWidget(ITEM, widget);
         }
     }
-    QObject::connect(ui->friendListWidget,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(singleclicked(QListWidgetItem*)));
-    QObject::connect(ui->blockListWidget,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(singleclicked(QListWidgetItem*)));
-
-
-
 
 }
 
 
 
-void MainWindow::showMyTalkBox(int sockfd, QString myAccount, QString talkTo, QString photoAddr, QString signature,QStringList record){
-    QStringList note = {0};
+void MainWindow::showMyTalkBox(int sockfd, QString myAccount, QString talkTo){
+    //QStringList note = {0};
     //int x = ui->friendListWidget->currentRow();
-    TalkBox *talkbox =  new TalkBox(sockfd,myAccount , talkTo, photoAddr,signature, record);
+    for(int i = 0; i < ui->blockListWidget->count(); i++){
+        QListWidgetItem *item = ui->blockListWidget->itemAt(0, i);
+        QWidget *bwid = ui->blockListWidget->itemWidget(item);
+        QLabel *label = bwid->findChild<QLabel *>("nameLabel");
+
+//        qDebug()<< label->text() <<endl;
+//        qDebug()<< talkTo<<endl;
+        if(label->text().compare(talkTo) == 0){
+            qDebug()<<"find some one i need !"<<endl;
+            label->setStyleSheet("color:#000000;");
+            break;
+        }
+    }
+
+    for(int i = 0; i < ui->friendListWidget->count(); i++){
+        QListWidgetItem *item = ui->friendListWidget->itemAt(0, i);
+        QWidget *fwid = ui->friendListWidget->itemWidget(item);
+        QLabel *flabel = fwid->findChild<QLabel *>("nameLabel");
+
+//        qDebug()<< flabel->text() <<endl;
+//        qDebug()<< talkTo<<endl;
+        if(flabel->text().compare(talkTo) == 0){
+            qDebug()<<"find some one i need !"<<endl;
+            flabel->setStyleSheet("color:#000000;");
+            break;
+        }
+    }
+    TalkBox *talkbox =  new TalkBox(sockfd,myAccount , talkTo);
     talkbox->show();
 }
 
@@ -336,53 +315,31 @@ void MainWindow::singleclicked(QListWidgetItem*item)
             QWidget *fwid = ui->friendListWidget->itemWidget(item);
             QWidget *bwid = ui->blockListWidget->itemWidget(item);
             QString talkerPhotoAddress;
-            QString talkerSig;
             QString talker;
-            QString talkerPhotoAddress_temp;
-            QString talkerSig_temp;
+
+
             if(bwid != NULL){
                 QLabel *label = bwid->findChild<QLabel *>("nameLabel");
+                //QLabel *plabel = bwid->findChild<QLabel *>("photoLabel");
+                //plabel->picture()
+
                 talker = label->text();
             }
             else{
                 QLabel *label = fwid->findChild<QLabel *>("nameLabel");
+                //QLabel *plabel = bwid->findChild<QLabel *>("photoLabel");
+
+
                 qDebug()<<label->text()<<endl;
                 talker = label->text();
             }
 
-            //drag photo and sigfrom server
-            char dragByName[40] = {0};
-            strcat(dragByName, "6");
-            strcat(dragByName, "|");
-            strcat(dragByName, talker.toLatin1());
-            ssize_t size = send(sockfd,(void*)&dragByName,sizeof(dragByName),0);
-            if(size == -1){
-                qDebug()<< "send message error" << endl;
-                return;
-            }
-            struct TalkerInfo talkerWindowInfo;
-            while(size = recv(sockfd, &talkerWindowInfo, sizeof(talkerWindowInfo), 0)){
-                if(size < 0){
-                    qDebug()<<"send msg error"<<endl;
-                    return;
-                }else if(size == 0){
-                    //connection problem
-                }else{
-                    if(talkerWindowInfo.talkerPhotoAddr[0] == '\0'){
-                        break;
-                    }
-                    talkerPhotoAddress = QString(QLatin1String(talkerWindowInfo.talkerPhotoAddr));
-                    talkerSig = QString(QLatin1String(talkerWindowInfo.talkeSig));
-                    break;
-
-                }
-            }
             if(fwid != NULL){
                 QString myid = QString(QLatin1String(my_id));
-                showMyTalkBox(sockfd, myid, talker, talkerPhotoAddress, talkerSig,record);
+                showMyTalkBox(sockfd, myid, talker);
             }else if(bwid != NULL){
                 QString myid = QString(QLatin1String(my_id));
-                showMyTalkBox(sockfd, myid, talker,talkerPhotoAddress, talkerSig,record);
+                showMyTalkBox(sockfd, myid, talker);
             }
             break;
         }
@@ -407,22 +364,10 @@ void MainWindow::closeEvent(QCloseEvent *event){
             qDebug()<< "send message error" << endl;
             return;
         }
-        char quitResult[10];
-        memset(quitResult, 0,sizeof(quitResult));
-            while(size = recv(sockfd, &quitResult, sizeof(quitResult),0)){
-                if(size < 0){
-                    qDebug()<< "send message error\n" << endl;
-                    return;
-                }else if(size == 0){
-                    printf("Connection closed\n");
-                    return;
-                }else{
-                    if(quitResult[0] == 'q'){
-                    qDebug()<<"quit successfully!"<<endl;
-                    break;
-                    }
-                }
-            }
+
+        rthread->mainwindowclosed = true;
+        qDebug()<<"start quit"<<endl;
+
         event->accept();
         qApp->quit();
     }else{
@@ -439,3 +384,164 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::receive_msg(char *message){
+
+}
+
+void MainWindow::receive3(char *message){
+
+    qDebug()<<"receive3 "<<message<<endl;
+
+    message+=2;
+    char *account;
+    char *phaddr;
+    char *autograph;
+    char *state;
+
+//    sscanf(message+2, "%[^|]|%[^|]|%[^|]|%[^|]",account, phaddr,autograph, state);
+    char dep[] = "|";
+    account = strtok(message,dep);
+    phaddr = strtok(nullptr,dep);
+    autograph = strtok(nullptr,dep);
+    state = strtok(nullptr,dep);
+
+//    memset(account,0,sizeof(account));
+//    memset(phaddr,0,sizeof(phaddr));
+//    memset(autograph,0,sizeof(autograph));
+//    memset(state,0,sizeof(state));
+    qDebug()<<account<<endl;
+    qDebug()<<phaddr<<endl;
+    qDebug()<<autograph<<endl;
+    qDebug()<<state<<endl;
+
+
+//                memset(tmpInformattion, 0,sizeof(tmpInformattion));
+//                strcpy(tmpInformattion, account);
+                if(state[0] == '\0'){
+                    return;
+                }
+                QString address = ":/QQ/";
+//                QString tmp;
+                //memset(tmp, 0, sizeof(tmp));
+                address.append(phaddr);
+//                address.append(tmp);
+                address.append(".jpg");
+                QPixmap userpixmap(address);
+                userpixmap.load(address);
+                ui->userpicture->setPixmap(userpixmap);
+                ui->userpicture->setScaledContents(true);
+
+                ui->username->setText(account);
+                ui->usersignature->setText(autograph);
+            return;
+}
+
+void MainWindow::receive2(char *message){
+    qDebug()<<"receive2 "<<message<<endl;
+    message+=2;
+    char *account;
+    char *phaddr;
+    char *state;
+    char *group;
+    char dep[] = "|";
+    account = strtok(message,dep);
+    phaddr = strtok(nullptr,dep);
+    state = strtok(nullptr,dep);
+    group = strtok(nullptr,dep);
+    qDebug()<<account<<endl;
+    qDebug()<<phaddr<<endl;
+    qDebug()<<state<<endl;
+    qDebug()<<group<<endl;
+//    sscanf(message+2, "%[^|]|%[^|]|%[^|]|%[^|]",account, phaddr, state, group);
+
+//                memset(friendNameCurrent, 0,sizeof(friendNameCurrent));
+//                memset(photoAddressCurrent, 0,sizeof(photoAddressCurrent));
+//                memset(groupCurrent, 0,sizeof(groupCurrent));
+//                memset(stateCurrent, 0,sizeof(stateCurrent));
+
+//                strcpy(friendNameCurrent, account);
+//                strcpy(photoAddressCurrent, phaddr);
+//                strcpy(groupCurrent, group);
+//                strcpy(stateCurrent, state);
+
+
+
+
+
+
+                if(group[0] == '\0'){
+                    return;
+                }
+//                photoAddressList << (phaddr);
+                photoAddressList.append(phaddr);
+                friendNameList.append(account);
+                groupList.append(group);
+                stateList.append(state);
+
+//                qDebug()<<"friend"<<friendNameList.at(1)<<endl;
+//                setListView();
+                return;
+
+}
+
+
+void MainWindow::on_refreshButton_clicked()
+{
+    ui->refreshButton->setText("refreshing...");
+    friendNameList.clear();
+    photoAddressList.clear();
+    stateList.clear();
+    groupList.clear();
+
+    QString uNameq = ui->username->text();
+    char uName[20] = {0};
+    QByteArray c= uNameq.toLocal8Bit();
+    strcpy(uName, c.data());
+    char msg[25] = {0};
+    strcat(msg, "2|");
+    strcat(msg, uName);
+    send(sockfd, msg, sizeof(msg), 0);
+    connect(rthread,SIGNAL(signalx(char*)),this,SLOT(setListView()));
+}
+
+void MainWindow::receive7(char *message){
+    qDebug()<<"receive7 "<<message<<endl;
+    char *uName;
+    char *fName;
+    char *sendDate;
+    char *sendMessage;
+//    sscanf(message+2, "%[^|]|%[^|]|%[^|]|%[^|]", uName, fName, sendDate, sendMessage);
+    char dep[] = "|";
+    uName = strtok(message,dep);
+    fName = strtok(nullptr,dep);
+    sendDate = strtok(nullptr,dep);
+    sendMessage = strtok(nullptr,dep);
+
+
+    for(int i = 0; i < ui->blockListWidget->count(); i++){
+        QListWidgetItem *item = ui->blockListWidget->itemAt(0, i);
+        QWidget *bwid = ui->blockListWidget->itemWidget(item);
+        QLabel *label = bwid->findChild<QLabel *>("nameLabel");
+        QString a = QString(QLatin1String(uName));
+        qDebug()<< label->text() <<endl;
+        qDebug()<< a<<endl;
+        if(label->text().compare(a)){
+            label->setStyleSheet("color:red;");
+            break;
+        }
+    }
+    for(int i = 0; i < ui->friendListWidget->count(); i++){
+        QListWidgetItem *item = ui->friendListWidget->itemAt(0, i);
+        QWidget *fwid = ui->friendListWidget->itemWidget(item);
+        QLabel *flabel = fwid->findChild<QLabel *>("nameLabel");
+        QString a;
+        a = QString(QLatin1String(uName));
+        qDebug()<< flabel->text() <<endl;
+        qDebug()<< a<<endl;
+        if(flabel->text().compare(a)){
+            flabel->setStyleSheet("color:red;");
+            break;
+        }
+    }
+
+}

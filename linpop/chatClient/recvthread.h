@@ -27,6 +27,7 @@ signals:
     void signal5(char *message);
     void signal7(char *message);
     void signalx(char *message);
+    void signala(char *message);
     void finished();
 private:
     int sockfd;

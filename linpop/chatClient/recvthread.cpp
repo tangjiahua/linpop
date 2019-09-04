@@ -62,7 +62,10 @@ void* recvThread::run(void* arg)
 
             break;
             case '8':break;
-            case 'a':break;
+            case 'a':
+            qDebug()<<"message == "<<messageCopy<<endl;
+            emit th->signala(messageCopy);
+            break;
             case 'b':break;
             case 'c':break;
             case 'd':break;

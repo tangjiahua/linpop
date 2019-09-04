@@ -60,6 +60,7 @@ private slots:
     void receive3(char *message);
     void receive2(char *message);
     void receive7(char *message);
+    void receivea(char *message);
 
     void on_refreshButton_clicked();
 

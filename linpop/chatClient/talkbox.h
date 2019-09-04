@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <stdio.h>
+#include <map>
+#include <QCloseEvent>
 namespace Ui {
 class TalkBox;
 }
@@ -23,7 +25,8 @@ public:
     QString myAccount;
     QString addrofname;
     QWidget *parent;
-    explicit TalkBox(int sockfd, QString myAccount, QString addrofname, QWidget *parent);
+    map<QString,TalkBox*> *mp;
+    explicit TalkBox(int sockfd, QString myAccount, QString addrofname, map<QString,TalkBox*> *mp,QWidget *parent);
     ~TalkBox();
     QStringList talkboxrecord;
     int recordno;
@@ -36,6 +39,8 @@ private slots:
     void on_sendButton_clicked();
 
     void receive_message(char *uName,char *fName,char *sendDate,char* sendMessage);
+
+    void closeEvent(QCloseEvent *event);
 
 private:
     Ui::TalkBox *ui;

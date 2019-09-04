@@ -15,14 +15,15 @@
 
 void* recvThread(void *args);
 
-TalkBox::TalkBox(int tsockfd, QString tmyAccount, QString taddrofname,QWidget *tparent) :
-    QMainWindow(parent),
+TalkBox::TalkBox(int tsockfd, QString tmyAccount, QString taddrofname,map<QString,TalkBox*> *tmp,QWidget *tparent = 0) :
+    QMainWindow(tparent),
     ui(new Ui::TalkBox)
 {
     sockfd = tsockfd;
     myAccount = tmyAccount;
     addrofname = taddrofname;
     parent = tparent;
+    mp = tmp;
     //gaddrofpicture = addrofpicture;
     //gsignature = signature;
 
@@ -166,34 +167,60 @@ void TalkBox::on_sendButton_clicked()
 
 
 
-
+        char nameAndDate[60]={0};
+        strcat(nameAndDate,msg.uName);
+        strcat(nameAndDate,"   ");
+        strcat(nameAndDate,msg.sendDate);
         //把本地的lineEdit内容发送到框上
         //QTextCursor talkboxcursor = ui->textEdit->textCursor();
-        ui->textEdit->append(ui->lineEdit->toPlainText());
+        char Messa[200]= {0};
+        strcat(Messa, msg.sendMessage);
+
+
+        ui->textEdit->append(QString(QLatin1String(nameAndDate)));
+        ui->textEdit->append(QString(QLatin1String(Messa)));
+
+        ui->textEdit->verticalScrollBar()->setSliderPosition(ui->textEdit->verticalScrollBar()->maximum());
+
         ui->lineEdit->clear();
-        QScrollBar *scrollbar = ui->textEdit->verticalScrollBar();
-        scrollbar->setSliderPosition(scrollbar->maximum());
-        return;
+
+//        ui->textEdit->append(ui->lineEdit->toPlainText());
+//        ui->lineEdit->clear();
+//        QScrollBar *scrollbar = ui->textEdit->verticalScrollBar();
+//        scrollbar->setSliderPosition(scrollbar->maximum());
+
 }
 
 void TalkBox::receive_message(char *uName, char *fName, char *sendDate, char *sendMessage){
-
     qDebug()<<"uName "<<uName<<endl;
     qDebug()<<"fName "<<fName<<endl;
     qDebug()<<"Date "<<sendDate<<endl;
     qDebug()<<"Message "<<sendMessage<<endl;
-    char nameAndDate[30]={0};
-    strcat(nameAndDate,uName);
-    strcat(nameAndDate," ");
-    strcat(nameAndDate,sendDate);
-    strcat(nameAndDate,"\n");
-    strcat(sendMessage,"\n");
+    if(!addrofname.compare(QString(QLatin1String(uName)))){
+
+        char nameAndDate[30]={0};
+        strcat(nameAndDate,uName);
+        strcat(nameAndDate,"   ");
+        strcat(nameAndDate,sendDate);
+        strcat(nameAndDate,"");
+        strcat(sendMessage,"");
 
 //    qDebug()<<nameAndDate;
 //    qDebug()<<sendMessage;
-    ui->textEdit->append(QString(QLatin1String(nameAndDate)));
-    ui->textEdit->append(QString(QLatin1String(sendMessage)));
-    ui->textEdit->verticalScrollBar()->setSliderPosition(ui->textEdit->verticalScrollBar()->maximum());
+        ui->textEdit->append(QString(QLatin1String(nameAndDate)));
+        ui->textEdit->append(QString(QLatin1String(sendMessage)));
+        ui->textEdit->verticalScrollBar()->setSliderPosition(ui->textEdit->verticalScrollBar()->maximum());
+    }
+}
+
+void TalkBox::closeEvent(QCloseEvent *event){
+    map<QString,TalkBox*>::iterator iter;
+    iter = mp->find(addrofname);
+
+    if(iter!=mp->end()){
+        mp->erase(iter);
+    }
+    event->accept();
 }
 
 

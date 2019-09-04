@@ -17,16 +17,16 @@ public:
     ~cnctThread();
 
     void start();
-    static void* run(void* arg);
-signals:
-
+    static void* run(void*
+                     arg);
+                    signals:
 
     void disconnect_signal();
     void finished(int finishfd);
 private:
     int sockfd;
     pthread_t thread;
-    string serverIp = "10.194.46.38";
+    string serverIp = "10.62.50.244";
     short serverPort = 8888;
     char localIp[20];
     connectServer cs;

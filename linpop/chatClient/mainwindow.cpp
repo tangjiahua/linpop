@@ -259,10 +259,12 @@ void MainWindow::showMyTalkBox(int sockfd, QString myAccount, QString talkTo){
     //int x = ui->friendListWidget->currentRow();
 
     map<QString,TalkBox*>::iterator iter;
-    iter = mp->find(talkTo);
+    iter = mp.find(talkTo);
     //iter = mp.find(talkTo);
+    map<QString,TalkBox*> *pmp;
+    pmp = &mp;
     if(iter==mp.end()){
-         TalkBox *talkbox =  new TalkBox(sockfd,myAccount,talkTo,this);
+         TalkBox *talkbox =  new TalkBox(sockfd,myAccount,talkTo,pmp,this);
          mp.insert(pair<QString,TalkBox*>(talkTo,talkbox));
          talkbox->show();
     }
@@ -547,7 +549,7 @@ void MainWindow::receive7(char *message){
             QString a = QString(QLatin1String(uName));
             qDebug()<< label->text() <<endl;
             qDebug()<< a<<endl;
-            if(label->text().compare(a)){
+            if(label->text().compare(a) == 0){
                 label->setStyleSheet("color:red;");
                 break;
             }
@@ -560,7 +562,7 @@ void MainWindow::receive7(char *message){
             a = QString(QLatin1String(uName));
             qDebug()<< flabel->text() <<endl;
             qDebug()<< a<<endl;
-            if(flabel->text().compare(a)){
+            if(flabel->text().compare(a) == 0){
                 flabel->setStyleSheet("color:red;");
                 break;
             }

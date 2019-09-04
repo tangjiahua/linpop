@@ -35,7 +35,7 @@ class MainWindow: public QMainWindow
 public:
 //    TalkBox* myTalkBox[100] = {nullptr};
     explicit MainWindow(int sockfd, char *my_id, QWidget *parent = 0);
-    map<QString,TalkBox*> *mp;
+    map<QString,TalkBox*> mp;
     ~MainWindow();
 
 private:

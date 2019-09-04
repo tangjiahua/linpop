@@ -141,8 +141,11 @@ void TalkBox::on_sendButton_clicked()
         msg.fName = tmp2.data();
 
         QByteArray tmp3;
+               qDebug()<<ui->lineEdit->toPlainText()<<endl;
+
                tmp3 = ui->lineEdit->toPlainText().toLatin1();
                msg.sendMessage = tmp3.data();
+               qDebug()<<msg.sendMessage<<endl;
                int lenth = strlen(msg.sendMessage);
                if(lenth>200)
                {
@@ -193,6 +196,8 @@ void TalkBox::on_sendButton_clicked()
         strcat(msgBox, msg.sendDate);
         strcat(msgBox, "|");
         strcat(msgBox, msg.sendMessage);
+
+        qDebug()<<msg.sendMessage<<endl;
         send(sockfd, &msgBox, sizeof(msgBox), 0);
 
 

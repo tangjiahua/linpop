@@ -54,6 +54,7 @@ private:
 private slots:
     void showMyTalkBox(int sockfd, QString myAccount, QString talkTo);
     void singleclicked(QListWidgetItem* item);
+    void singleclickedBlock(QListWidgetItem* item);
     void dragMyInformation();
     void dragListFromServer();
     void setListView();

@@ -81,7 +81,7 @@ MainWindow::MainWindow(int sockfd, char *my_id , QWidget *parent) :
     connect(rthread,SIGNAL(signalb(char*)),this,SLOT(receiveb(char*)));
 
     connect(ui->friendListWidget,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(singleclicked(QListWidgetItem*)));
-    connect(ui->blockListWidget,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(singleclicked(QListWidgetItem*)));
+    connect(ui->blockListWidget,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(singleclickedBlock(QListWidgetItem*)));
 //    sleep(5);
 //        setListView();
 
@@ -322,6 +322,7 @@ void MainWindow::showMyTalkBox(int sockfd, QString myAccount, QString talkTo){
 void MainWindow::singleclicked(QListWidgetItem*item)
 
 {
+
     QMessageBox box(QMessageBox::Warning,"Choose","Choose What To Do");
         box.setWindowFlags(Qt::FramelessWindowHint);
 
@@ -488,6 +489,112 @@ void MainWindow::singleclicked(QListWidgetItem*item)
     return;
 }
 
+void MainWindow::singleclickedBlock(QListWidgetItem*item)
+
+{
+
+    QMessageBox box(QMessageBox::Warning,"Choose","Choose What To Do");
+        box.setWindowFlags(Qt::FramelessWindowHint);
+
+        box.setStandardButtons(QMessageBox::Cancel|QMessageBox::Close);
+        box.setButtonText(QMessageBox::Cancel, QString("Delete"));
+
+        QCursor *mouse;
+        QPoint position;
+        position.setX(mouse->pos().x()-140);
+        position.setY(mouse->pos().y()-30);
+        box.move(QPoint(position));
+
+
+        QStringList record={"1","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4","2","3","4"};
+
+        int x = box.exec();
+        QWidget *fwid = ui->friendListWidget->itemWidget(item);
+        QWidget *bwid = ui->blockListWidget->itemWidget(item);
+        QString talkerPhotoAddress;
+        QString talker;
+
+
+        if(bwid != NULL){
+            QLabel *label = bwid->findChild<QLabel *>("nameLabel");
+            //QLabel *plabel = bwid->findChild<QLabel *>("photoLabel");
+            //plabel->picture()
+
+            talker = label->text();
+        }
+        else{
+            QLabel *label = fwid->findChild<QLabel *>("nameLabel");
+            //QLabel *plabel = bwid->findChild<QLabel *>("photoLabel");
+
+
+            qDebug()<<label->text()<<endl;
+            talker = label->text();
+        }
+
+
+
+
+
+        switch (x) {
+
+        case QMessageBox::Cancel:{
+            if(fwid != NULL){
+
+                char* ptr;
+                char *ptrmyname;
+                QByteArray ba;
+                    //QString str = ui->namelineEdit->text();
+                ba = talker.toLatin1();
+                ptr = ba.data();
+
+                QByteArray ba_myname;
+                        //QString str = ui->namelineEdit->text();
+                ba_myname = ui->username->text().toLatin1();
+                ptrmyname = ba_myname.data();
+
+
+                char buf[10] = {0};
+                strcat(buf, "a|");
+                strcat(buf, ptrmyname);
+                strcat(buf, "|");
+                strcat(buf, ptr);
+                send(sockfd, buf, sizeof(buf), 0);
+                break;
+            }else if(bwid != NULL){
+                char* ptr;
+                char* ptrmyname;
+                    QByteArray ba;
+                    //QString str = ui->namelineEdit->text();
+                    ba = talker.toLatin1();
+                    ptr = ba.data();
+//                    char buf[10] = {0};
+//                    strcat(buf, "a|");
+//                    strcat(buf, ptr);
+//                    send(sockfd, buf, sizeof(buf), 0);
+
+                    QByteArray ba_myname;
+                            //QString str = ui->namelineEdit->text();
+                    ba_myname = ui->username->text().toLatin1();
+                    ptrmyname = ba_myname.data();
+
+                    char buf1[10] = {0};
+                    strcat(buf1, "a|");
+                    strcat(buf1, ptrmyname);
+                    strcat(buf1, "|");
+                    strcat(buf1, ptr);
+                    send(sockfd, buf1, sizeof(buf1), 0);
+                    break;
+            }
+
+        }
+
+
+        default:
+            qDebug()<<"nothing";
+            break;
+        }
+    return;
+}
 
 
 void MainWindow::closeEvent(QCloseEvent *event){

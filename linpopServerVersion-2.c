@@ -225,6 +225,9 @@ int userRegister(char *buf, int confd ){
 
 int userLogin(char *buf, int confd)
 {
+	printf("你号\n");
+	char nihao[20] = "你好";
+	printf("%s\n",nihao);
 	MYSQL mysql;//句柄
 	MYSQL_RES *result;//结果集指针
 	MYSQL_ROW  row;//行结果

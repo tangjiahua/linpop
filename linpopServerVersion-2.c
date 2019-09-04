@@ -11,7 +11,7 @@
 //server information
 int clientfd[1024] = {0};
 char accountClientfd[1024][20] = {0};
-char serverIp[20] = "10.62.50.244";
+char serverIp[20] = "10.194.52.61";
 int serverPort = 8888;
 
 //functtions
@@ -26,7 +26,7 @@ int addFriend(char *buf, int confd);
 int sendMsg(char *buf, int confd);
 int delete(char *buf, int confd);
 int block(char *buf, int confd);
-int dragRecord(char *buf, int confd);
+// int dragRecord(char *buf, int confd);
 
 struct TalkerInfo{
     char talkerPhotoAddr[2];
@@ -138,9 +138,9 @@ void * handClient(void *arg)
 			case 'b':
 				block(buf, confd);
 				break;
-			case '8':
-				dragRecord(buf, confd);
-				break;
+			// case '8':
+			// 	dragRecord(buf, confd);
+			// 	break;
 		
 			default:
 				printf("error!");
@@ -232,19 +232,21 @@ int userLogin(char *buf, int confd)
 	char pWord[20]={0};
 	char sqlStr[1024]={0};
 	sscanf(buf+2,"%[^|]|%s",uName,pWord);
-	sprintf(sqlStr,"%s'%s'", "select password from userlist where account=",uName);
-
 	mysql_init(&mysql);
 	if(mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0) == NULL)
 	{
 		printf("%s\n",mysql_error(&mysql));
 		return -1;
 	}
-
+	
+	//check if others
+	memset(sqlStr, 0, sizeof(sqlStr));
+	sprintf(sqlStr,"%s'%s'", "select password from userlist where account=",uName);
     //start quering
 	if(mysql_query(&mysql,sqlStr) != 0)
 	{
 		printf("%s\n",mysql_error(&mysql));
+		printf("release my command\n");
 		//release your command
 		 result = mysql_store_result(&mysql);
 		if (result)
@@ -269,17 +271,67 @@ int userLogin(char *buf, int confd)
     //读取结果，返回结果集中的一行，数组，字符串数组
 	if(row = mysql_fetch_row(result))
 	{
+		printf("hello pswd\n");
 		if(strcmp(row[0], pWord) == 0)
 		{
-			printf("登录成功\n");
-            send(confd,"1",strlen("1"),0);
-			//search clientfd find confd and make accountconfd[1024] = account
-			for(int i = 0; i < 1024; i++){
-				if(clientfd[i] == confd){
-					strcat(accountClientfd[i], uName);
-					break;
+			//release command
+			result = mysql_store_result(&mysql);
+			if (result)
+			{
+				mysql_free_result(result);
+				while (!mysql_next_result(&mysql))
+				{
+					result = mysql_store_result(&mysql);
+					mysql_free_result(result);
 				}
 			}
+
+			memset(sqlStr, 0, sizeof(sqlStr));
+			sprintf(sqlStr,"%s'%s';", "select state from information where account=",uName);
+			printf("%s\n",sqlStr);
+			if(mysql_query(&mysql,sqlStr) != 0)
+			{
+				printf("error\n");
+				printf("%s\n",mysql_error(&mysql));
+				//release your command
+				result = mysql_store_result(&mysql);
+				if (result)
+				{
+					mysql_free_result(result);
+					while (!mysql_next_result(&mysql))
+					{
+						result = mysql_store_result(&mysql);
+						mysql_free_result(result);
+					}
+				}
+				return -1;
+			}
+			printf("go here!\n");
+			result = mysql_store_result(&mysql);
+			if(row = mysql_fetch_row(result)){
+				if(strcmp(row[0], "1") == 0){
+					//already been logined by others
+					send(confd, "3", sizeof("3"), 0);
+					printf("send 3\n");
+				}else if(strcmp(row[0], "0") == 0){
+					printf("登录成功\n");
+					
+					send(confd,"1",strlen("1"),0);
+					//search clientfd find confd and make accountconfd[1024] = account
+					for(int i = 0; i < 1024; i++){
+						if(clientfd[i] == confd){
+							strcat(accountClientfd[i], uName);
+							break;
+						}
+					}
+				}
+			}
+			else{
+				printf("no message here!");
+			}
+
+
+			
 		}
 		else
 		{
@@ -289,8 +341,15 @@ int userLogin(char *buf, int confd)
 	}else
 	{
 		printf("用户未注册\n");
-        send(confd,"3",strlen("0"),0);
+        send(confd,"2",strlen("2"),0);
 	}
+
+
+
+
+
+
+
     //release your command
 		 result = mysql_store_result(&mysql);
 		if (result)
@@ -358,6 +417,7 @@ int dragList(char *buf, int confd){
 			strcat(bag, "|");
 			strcat(bag, row[3]);
 			send(confd, bag, sizeof(bag), 0);
+			printf("SEND ONCE TO GIVE A LIST MEMBER%s\n",bag );
 			for(long long i = 0; i < 100000000; i++){
 				;
 			}
@@ -673,6 +733,7 @@ int dragTalkerInfo(char *buf, int confd){
 
 int addFriend(char *buf, int confd)
 {
+	//返回4|1查无此人， 2已经被拉黑， 3邀请马不对，4添加成功,5已经在列表
 	MYSQL mysql;//句柄
 	MYSQL_RES *result;//结果集指针
 	MYSQL_ROW  row;//行结果
@@ -691,10 +752,11 @@ int addFriend(char *buf, int confd)
 	result = mysql_store_result(&mysql);
 	if(row = mysql_fetch_row(result)){
 		//return 1
-		send(confd, "1", strlen("1"), 0);
+		//不在列表里面
+		send(confd, "4|5", strlen("4|5"), 0);
 		
 	}else{
-		//not in my list
+		//not in my list，所以我要添加
 		if (result)
 		{
 			mysql_free_result(result);
@@ -741,11 +803,18 @@ int addFriend(char *buf, int confd)
 					//return 0
 					if(strcmp(code, row[0]) == 0){
 						//return 2 并且加入到数据库
-						send(confd, "2", strlen("2"), 0);
+						send(confd, "4|4", strlen("4|4"), 0);
 						//add to mysql
 						memset(sqlStr, 0, sizeof(sqlStr));
 						sprintf(sqlStr,"%s'%s','%s','1');", "insert into relation values(", uName, fName );
 						printf("%s\n", sqlStr);
+						//release your command
+						mysql_free_result(result);
+						while (!mysql_next_result(&mysql))
+						{
+							result = mysql_store_result(&mysql);
+							mysql_free_result(result);
+						}
 						mysql_query(&mysql,sqlStr);
 						memset(sqlStr, 0, sizeof(sqlStr));
 						sprintf(sqlStr,"%s'%s','%s','1');", "insert into relation values(", fName, uName );
@@ -753,7 +822,7 @@ int addFriend(char *buf, int confd)
 						mysql_query(&mysql,sqlStr);
 						
 					}else{
-						send(confd, "3", strlen("3"), 0);
+						send(confd, "4|3", strlen("4|3"), 0);
 						
 					}
 				}else{
@@ -763,7 +832,8 @@ int addFriend(char *buf, int confd)
 				
 			}else{
 				//return 4;
-				send(confd, "4", strlen("4"), 0);
+				//查无此人
+				send(confd, "4|1", strlen("4|1"), 0);
 				
 			}
 		}
@@ -1069,69 +1139,70 @@ int block(char *buf, int confd){
 
 
 
-int dragRecord(char *buf, int confd){
-	MYSQL mysql;//句柄
-	MYSQL_RES *result;//结果集指针
-	MYSQL_ROW  row;//行结果
+// int dragRecord(char *buf, int confd){
+// 	MYSQL mysql;//句柄
+// 	MYSQL_RES *result;//结果集指针
+// 	MYSQL_ROW  row;//行结果
 	
-	char uName[20] = {0};
-	char fName[20] = {0};
+// 	char uName[20] = {0};
+// 	char fName[20] = {0};
 
-	char sqlStr[1024]={0};
-	sscanf(buf+2,"%[^|]|%[^|]",uName, fName);
-	sprintf(sqlStr,"%s '%s' %s '%s';", "update relation set groups = '0' where account = ", uName, "AND friendaccount = ", fName);
-	printf("%s\n", sqlStr);
-	mysql_init(&mysql);
-	mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0);
+// 	char sqlStr[1024]={0};
+// 	//select date, message from record where (account = uName AND toaccount = fName) OR (account = fName AND toaccount = fName);
+// 	sscanf(buf+2,"%[^|]|%[^|]","select date, message from record where account = ",uName);
+// 	// sprintf(sqlStr,"%s '%s' %s '%s';");
+// 	printf("%s\n", sqlStr);
+// 	mysql_init(&mysql);
+// 	mysql_real_connect(&mysql,"127.0.0.1","root","jiahua","linpop",0,NULL,0);
 
 
-	if(mysql_query(&mysql, sqlStr) != 0){
-		//插入失败，未知原因
-		send(confd,"0",strlen("0"),0);
-		//release your command
-		result = mysql_store_result(&mysql);
-		if (result){
-			mysql_free_result(result);
-			while (!mysql_next_result(&mysql))
-			{
-				result = mysql_store_result(&mysql);
-				mysql_free_result(result);
-			}
-		}
-	}else{
-		memset(sqlStr, 0, sizeof(sqlStr));
-		sprintf(sqlStr,"%s '%s' %s '%s';", "delete from relation where account = ", fName, "AND friendaccount = ", uName);
-		printf("%s\n", sqlStr);
-		if(mysql_query(&mysql, sqlStr) != 0){
-			//插入失败，未知原因
-			send(confd,"0",strlen("0"),0);
-			//release your command
-			result = mysql_store_result(&mysql);
-			if (result){
-				mysql_free_result(result);
-				while (!mysql_next_result(&mysql))
-				{
-					result = mysql_store_result(&mysql);
-					mysql_free_result(result);
-				}
-			}
-		}else{
-			char blockReturn[10];
-			memset(blockReturn, 0, sizeof(blockReturn));
-			strcat(blockReturn, "b|1");
-			send(confd, blockReturn, sizeof(blockReturn), 0);
-		}
-	}
+// 	if(mysql_query(&mysql, sqlStr) != 0){
+// 		//插入失败，未知原因
+// 		send(confd,"0",strlen("0"),0);
+// 		//release your command
+// 		result = mysql_store_result(&mysql);
+// 		if (result){
+// 			mysql_free_result(result);
+// 			while (!mysql_next_result(&mysql))
+// 			{
+// 				result = mysql_store_result(&mysql);
+// 				mysql_free_result(result);
+// 			}
+// 		}
+// 	}else{
+// 		memset(sqlStr, 0, sizeof(sqlStr));
+// 		sprintf(sqlStr,"%s '%s' %s '%s';", "delete from relation where account = ", fName, "AND friendaccount = ", uName);
+// 		printf("%s\n", sqlStr);
+// 		if(mysql_query(&mysql, sqlStr) != 0){
+// 			//插入失败，未知原因
+// 			send(confd,"0",strlen("0"),0);
+// 			//release your command
+// 			result = mysql_store_result(&mysql);
+// 			if (result){
+// 				mysql_free_result(result);
+// 				while (!mysql_next_result(&mysql))
+// 				{
+// 					result = mysql_store_result(&mysql);
+// 					mysql_free_result(result);
+// 				}
+// 			}
+// 		}else{
+// 			char blockReturn[10];
+// 			memset(blockReturn, 0, sizeof(blockReturn));
+// 			strcat(blockReturn, "b|1");
+// 			send(confd, blockReturn, sizeof(blockReturn), 0);
+// 		}
+// 	}
 
-	//release your command
-	result = mysql_store_result(&mysql);
-	if (result)
-	{
-		mysql_free_result(result);
-		while (!mysql_next_result(&mysql))
-		{
-			result = mysql_store_result(&mysql);
-			mysql_free_result(result);
-		}
-	}
-}
+// 	//release your command
+// 	result = mysql_store_result(&mysql);
+// 	if (result)
+// 	{
+// 		mysql_free_result(result);
+// 		while (!mysql_next_result(&mysql))
+// 		{
+// 			result = mysql_store_result(&mysql);
+// 			mysql_free_result(result);
+// 		}
+// 	}
+// }

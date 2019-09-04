@@ -21,7 +21,9 @@ SOURCES += main.cpp\
     mulitemdelegate.cpp \
     talkbox.cpp \
     cnctthread.cpp \
-    recvthread.cpp
+    recvthread.cpp \
+    addfriend.cpp \
+    editprofile.cpp
 
 HEADERS  += \
     login.h \
@@ -33,13 +35,17 @@ HEADERS  += \
     mulistitemdata.h \
     cnctthread.h \
     recvthread.h \
-    talkbox.h
+    talkbox.h \
+    addfriend.h \
+    editprofile.h
 
 FORMS    += interface.ui \
     login.ui \
     register.ui \
     mainwindow.ui \
-    talkbox.ui
+    talkbox.ui \
+    addfriend.ui \
+    editprofile.ui
 
 RESOURCES += \
     resources.qrc \

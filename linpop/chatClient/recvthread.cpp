@@ -51,7 +51,10 @@ void* recvThread::run(void* arg)
             emit th->signal3(messageCopy);
 
             break;
-        case '4':break;
+            case '4':
+            qDebug()<<"message == "<<messageCopy<<endl;
+            emit th->signal4(messageCopy);
+            break;
             case '5':break;
             case '6':break;
             case '7':
@@ -66,7 +69,9 @@ void* recvThread::run(void* arg)
             qDebug()<<"message == "<<messageCopy<<endl;
             emit th->signala(messageCopy);
             break;
-            case 'b':break;
+            case 'b':
+            qDebug()<<"message == "<<messageCopy<<endl;
+            emit th->signalb(messageCopy);break;
             case 'c':break;
             case 'd':break;
         case 'x':emit th->signalx(messageCopy);

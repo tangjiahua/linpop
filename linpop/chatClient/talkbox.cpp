@@ -141,9 +141,39 @@ void TalkBox::on_sendButton_clicked()
         msg.fName = tmp2.data();
 
         QByteArray tmp3;
-        tmp3 = ui->lineEdit->toPlainText().toLatin1();
-        msg.sendMessage = tmp3.data();
-        tmp3.clear();
+               tmp3 = ui->lineEdit->toPlainText().toLatin1();
+               msg.sendMessage = tmp3.data();
+               int lenth = strlen(msg.sendMessage);
+               if(lenth>200)
+               {
+                       QMessageBox msg(this);//对话框设置父组件
+                       msg.setText("Content length does not exceed 200, please try again");//对话框提示文本
+                       msg.setIcon(QMessageBox::Information);//设置图标类型
+                       msg.setStandardButtons(QMessageBox::Retry);//对话框上包含的按钮
+                       if(msg.exec() == QMessageBox::Retry)//模态调用
+                       {
+                          qDebug() << "Content length does not exceed 200, please try again";//数据处理
+                          tmp3.clear();
+                          return;
+                       }
+               }
+               int i;
+               for(i=0;i<lenth;i++)
+               {
+                   if(msg.sendMessage[i]=='|')
+                   {
+                       QMessageBox msg(this);//对话框设置父组件
+                       msg.setText("Content can't contain character |, please try again");//对话框提示文本
+                       msg.setIcon(QMessageBox::Information);//设置图标类型
+                       msg.setStandardButtons(QMessageBox::Retry);//对话框上包含的按钮
+                       if(msg.exec() == QMessageBox::Retry)//模态调用
+                       {
+                          qDebug() << "Content length does not exceed 200, please try again";//数据处理
+                          tmp3.clear();
+                          return;
+                       }
+                   }
+               }
 
         QByteArray tmp4;
         tmp4 = text.toLatin1();

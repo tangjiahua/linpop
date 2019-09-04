@@ -14,6 +14,7 @@
 #include "QTime"
 #include "recvthread.h"
 #include <map>
+#include"addfriend.h"
 
 namespace Ui {
 class MainWindow;
@@ -38,6 +39,7 @@ public:
     map<QString,TalkBox*> mp;
     ~MainWindow();
 
+
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *m_model;
@@ -57,16 +59,21 @@ private slots:
     void setListView();
     void closeEvent(QCloseEvent *event);
     void receive_msg(char *);
-    void receive3(char *message);
     void receive2(char *message);
+    void receive3(char *message);
+    void receive4(char *message);
     void receive7(char *message);
     void receivea(char *message);
+    void receiveb(char *message);
 
     void on_refreshButton_clicked();
+
+    void addTo();
 
 signals:
     void close_signal();
     void receiveChatMsg(char *uName,char *fName,char *snedDate,char *sendMessage);
+    void sendAddResult(char result);
 };
 
 

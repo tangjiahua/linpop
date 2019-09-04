@@ -35,6 +35,60 @@ void Register::commitTo()
     strcpy(rf.name,ui->lineEdit_name->text().toStdString().c_str());
     strcpy(rf.pwd,ui->lineEdit_pwd->text().toStdString().c_str());
 
+    if(strlen(rf.name)>15)
+        {
+            ui->label_new_account->setText(QString("username's Length should not exceed 15"));
+            memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
+            return;
+        }
+
+        if(strlen(rf.pwd)>15)
+        {
+            ui->label_new_account->setText(QString("pwd's Length should not exceed 15"));
+            memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
+            return;
+        }
+
+
+        int i =0 ;
+        int flag = 0;
+
+        int len1 = strlen(rf.name);
+        for(i=0;i<len1;i++)
+        {
+            if((rf.name[i]>=48&&rf.name[i]<=57)||(rf.name[i]>=65&&rf.name[i]<=90)||(rf.name[i]>=97&&rf.name[i]<=122))
+            {
+                continue;
+            }
+            else
+            {
+                flag = 1;
+                break;
+            }
+        }
+
+        int len2 = strlen(rf.pwd);
+        for(i=0;i<len2;i++)
+        {
+            if((rf.pwd[i]>=48&&rf.pwd[i]<=57)||(rf.pwd[i]>=65&&rf.pwd[i]<=90)||(rf.pwd[i]>=97&&rf.pwd[i]<=122))
+            {
+                continue;
+            }
+            else
+            {
+                flag = 1;
+                break;
+            }
+        }
+
+        if(flag)
+        {
+            ui->label_new_account->setText(QString("username and pwd could only contain number, capital letter or lowercase letter"));
+            memset(registInfoSendToServer,0,sizeof(registInfoSendToServer));
+            return;
+        }
+
+
     char cfmpwd[20] = {0};
 
     strcpy(cfmpwd,ui->lineEdit_cfmpwd->text().toStdString().c_str());
@@ -70,9 +124,6 @@ void Register::commitTo()
     cthread->start();
 
     connect(cthread,SIGNAL(finished(int)),this,SLOT(startrecv(int )));
-
-
-
 
 }
 

@@ -26,7 +26,7 @@ public:
 private:
     int sockfd;
     pthread_t thread;
-    string serverIp = "10.62.50.244";
+    string serverIp = "10.194.52.61";
     short serverPort = 8888;
     char localIp[20];
     connectServer cs;

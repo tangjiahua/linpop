@@ -22,12 +22,14 @@ public:
 signals:
     void sendMsg_signal(char *message);
     void unknownerror();
-    void signal3(char *message);
     void signal2(char *message);
+    void signal3(char *message);
+    void signal4(char *message);
     void signal5(char *message);
     void signal7(char *message);
     void signalx(char *message);
     void signala(char *message);
+    void signalb(char *message);
     void finished();
 private:
     int sockfd;
